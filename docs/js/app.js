@@ -212,7 +212,8 @@
     $("#p-now").textContent = fmt.p(p);
     const approved = p < cutoff;
     $("#p-decision").textContent = approved ? "APPROVED" : "DECLINED";
-    $("#p-decision").style.color = approved ? "#9ad4be" : "#f0a396";
+    $("#p-decision").classList.toggle("is-ok", approved);
+    $("#p-decision").classList.toggle("is-bad", !approved);
     $("#dock-decision").textContent = approved ? "would cross cutoff" : "declined";
   }
 
