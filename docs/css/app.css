@@ -12,8 +12,8 @@
   --route-b: #4f8f78;
   --route-c: #d4b46a;
   --text: #f2eee4;
-  --text-dim: #b7b0a3;
-  --muted: #8d8678;
+  --text-dim: #cdc6b8;
+  --muted: #a39b8c;
   --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
   --serif: "Newsreader", "Iowan Old Style", Georgia, serif;
   --sans: "Outfit", "Avenir Next", sans-serif;
@@ -137,7 +137,18 @@ h2 { font-size: clamp(1.6rem, 3vw, 2.3rem); }
 .btn-gold { background: var(--gold); color: #1a1408; border-color: var(--gold); }
 .btn-gold:hover { background: var(--gold-2); }
 .btn-ghost:hover { border-color: var(--gold); color: var(--gold-2); }
-.btn:focus-visible, .steps button:focus-visible, .gate input:focus-visible {
+.text-btn {
+  appearance: none;
+  border: 0;
+  background: none;
+  color: var(--gold-2);
+  font: 500 0.9rem var(--sans);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: 0;
+}
+.btn:focus-visible, .steps button:focus-visible, .gate input:focus-visible, .text-btn:focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: 3px;
 }
@@ -154,13 +165,14 @@ h2 { font-size: clamp(1.6rem, 3vw, 2.3rem); }
   position: absolute;
   right: 1.1rem;
   top: 1.1rem;
-  border: 1.5px solid var(--gold);
+  border: 2px solid var(--gold);
   color: var(--gold);
-  padding: 0.2rem 0.45rem;
-  font-size: 0.68rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.7rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  transform: rotate(8deg);
+  transform: rotate(7deg);
+  box-shadow: 0 0 0 4px rgba(212, 180, 106, 0.12);
 }
 .stat-grid {
   display: grid;
@@ -258,24 +270,46 @@ h2 { font-size: clamp(1.6rem, 3vw, 2.3rem); }
 .routes-head { display: grid; grid-template-columns: 1.3fr 0.9fr; gap: 1.4rem; align-items: end; margin-bottom: 1.4rem; }
 .p-meter-scale {
   position: relative;
-  height: 14px;
+  height: 16px;
   border-radius: 999px;
   background: linear-gradient(90deg, var(--route-b), #8a7a3c 55%, var(--route-a));
-  margin-bottom: 0.55rem;
+  margin-bottom: 0.7rem;
 }
 .p-tick, .p-needle {
   position: absolute;
-  top: -5px;
-  width: 2px;
-  height: 24px;
+  top: -7px;
+  width: 3px;
+  height: 30px;
   background: #fff;
 }
-.p-tick { background: var(--gold-2); box-shadow: 0 0 0 3px rgba(212, 180, 106, 0.25); }
-.p-needle { background: #fff; width: 3px; }
+.p-tick { background: var(--gold-2); box-shadow: 0 0 0 4px rgba(212, 180, 106, 0.28); }
+.p-needle {
+  width: 4px;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.22);
+  transition: left 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.p-needle::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+}
 .route-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.9rem; }
-.route { display: flex; flex-direction: column; gap: 0.35rem; min-height: 100%; }
-.route.is-featured { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(212, 180, 106, 0.12); }
-.route.is-live { outline: 1px solid var(--gold); }
+.route { display: flex; flex-direction: column; gap: 0.4rem; min-height: 100%; }
+.route.is-featured {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 50px rgba(212, 180, 106, 0.16);
+  background: linear-gradient(180deg, rgba(212, 180, 106, 0.1), var(--ink-2) 42%);
+}
+.route.is-live {
+  outline: 2px solid var(--gold);
+  box-shadow: 0 0 0 6px rgba(212, 180, 106, 0.14);
+}
 .stamp {
   align-self: start;
   font-size: 0.68rem;
@@ -291,7 +325,16 @@ h2 { font-size: clamp(1.6rem, 3vw, 2.3rem); }
 .route-a .route-cost { color: #f0a396; }
 .route-b .route-cost { color: #9ad4be; }
 .route-c .route-cost { color: var(--gold-2); }
-.fineprint { font-size: 0.88rem; max-width: 80ch; margin-top: 1.1rem; }
+.fineprint { font-size: 0.95rem; max-width: 72ch; margin-top: 1.4rem; line-height: 1.6; }
+.reveal {
+  margin-top: 1.2rem;
+  padding: 1rem 1.15rem;
+  border-left: 3px solid var(--gold);
+  background: rgba(212, 180, 106, 0.08);
+  font-family: var(--serif);
+  font-size: 1.25rem;
+}
+.reveal[hidden] { display: none; }
 
 .view-memo { background: linear-gradient(180deg, transparent, rgba(243, 239, 228, 0.03)); }
 .paper {
@@ -313,30 +356,33 @@ h2 { font-size: clamp(1.6rem, 3vw, 2.3rem); }
 .plain { padding-left: 1.1rem; }
 .plain li { margin: 0.35rem 0; }
 pre {
-  background: var(--ink-3);
-  border: 1px solid var(--line);
+  background: #08090c;
+  border: 1px solid rgba(240, 212, 138, 0.28);
   border-radius: 12px;
   padding: 0.9rem 1rem;
   overflow: auto;
+  color: var(--gold-2);
 }
 
 .dock {
-  position: fixed;
-  right: 1rem;
-  bottom: 1rem;
+  position: sticky;
+  top: 57px;
   z-index: 8;
-  width: min(320px, calc(100vw - 2rem));
+  width: 100%;
   background: rgba(18, 20, 26, 0.94);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  padding: 0.85rem 1rem;
-  box-shadow: var(--shadow);
-  font-size: 0.9rem;
+  border-bottom: 1px solid var(--line);
+  border-left: 3px solid var(--gold);
+  padding: 0.65rem 1.4rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.4rem;
+  align-items: baseline;
+  font-size: 0.92rem;
   color: var(--text-dim);
 }
 .dock[hidden] { display: none; }
 .dock-id { font-family: var(--mono); color: var(--gold-2); letter-spacing: 0.08em; margin: 0 0 0.25rem; }
-.dock p { margin: 0.15rem 0; }
+.dock p { margin: 0; }
 
 .site-foot {
   border-top: 1px solid var(--line);
@@ -345,8 +391,8 @@ pre {
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
-  color: var(--muted);
-  font-size: 0.88rem;
+  color: var(--text-dim);
+  font-size: 0.95rem;
   position: relative;
   z-index: 1;
 }
@@ -367,7 +413,17 @@ pre {
 .toast[hidden] { display: none; }
 
 @media (max-width: 900px) {
-  .nav { display: none; }
+  .topbar { flex-wrap: wrap; }
+  .nav {
+    display: flex;
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 0.15rem;
+    mask-image: linear-gradient(to right, #000 88%, transparent);
+  }
+  .nav a { white-space: nowrap; }
+  .topbar-meta { margin-left: auto; }
   .stat-grid, .triptych, .view-console, .tiles, .compare, .routes-head, .route-grid, .method-grid, .curve {
     grid-template-columns: 1fr;
   }
@@ -376,11 +432,13 @@ pre {
   .steps { display: flex; gap: 0.35rem; overflow: auto; padding-bottom: 0.4rem; }
   .steps li { flex: 0 0 auto; }
   .card-stamp { position: static; display: inline-block; transform: none; margin-bottom: 0.6rem; }
-  .dock { left: 1rem; right: 1rem; width: auto; }
+  .dock { top: 6.5rem; }
   h1 { max-width: none; }
+  .route.is-featured { transform: translateY(-3px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .panel { animation: none; }
+  .p-needle { transition: none; }
 }

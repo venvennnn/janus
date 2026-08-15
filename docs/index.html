@@ -42,6 +42,13 @@
     </div>
   </header>
 
+  <aside class="dock" id="applicant-dock" hidden>
+    <p class="dock-id">A-7100</p>
+    <p>Age 21 · informal income · self-employed · rural</p>
+    <p>DTI recorded <strong data-bind="demo_applicant.recorded_dti" data-fmt="dti"></strong> · true <strong data-bind="demo_applicant.true_dti" data-fmt="dti"></strong></p>
+    <p>Did not default · <span id="dock-decision">declined</span></p>
+  </aside>
+
   <main>
     <section id="brief" class="view view-brief" data-view="brief">
       <div class="brief-hero">
@@ -215,15 +222,15 @@
       <div class="routes-head">
         <div>
           <p class="eyebrow">Recourse desk · run.recourse_menu</p>
-          <h2>One applicant. Three route classes.</h2>
-          <p>A single path is fragile. Janus returns the top routes within an effort budget, spanning genuine trade-offs. Route A is a defender finding — never shown to the applicant.</p>
+          <h2>The model’s response to three kinds of improvement. Only one is free.</h2>
+          <p>A single path is fragile. Janus returns the top routes within an effort budget. Route A is a defender finding — never shown to the applicant. Routes B and C are what a policy owner can actually offer.</p>
         </div>
         <div class="p-meter" aria-label="Predicted default versus cutoff">
           <div class="p-meter-scale">
             <span class="p-tick" id="p-cutoff-tick"></span>
             <span class="p-needle" id="p-needle"></span>
           </div>
-          <p><span class="mono">p = <span id="p-now"></span></span> · cutoff <span class="mono" data-bind="model.cutoff" data-fmt="p"></span> · <span id="p-decision">DECLINED</span></p>
+          <p><span class="mono">p = <span id="p-now"></span></span> · cutoff <span class="mono" data-bind="model.cutoff" data-fmt="p"></span> · <span id="p-decision">DECLINED</span> · <button type="button" class="text-btn" id="btn-reset-p">Show original</button></p>
         </div>
       </div>
 
@@ -256,7 +263,8 @@
           <button type="button" class="btn btn-gold" data-apply="c">Apply on desk</button>
         </article>
       </div>
-      <p class="fineprint">Routes describe what the model responds to. They never promise approval. Route C is not a documentation mandate — whether to request statements is the lender’s policy decision.</p>
+      <p class="reveal" id="route-reveal" hidden>Documentation alone takes A-7100 across the cutoff. No money moved. The exclusion was measurement error — and the remedy is measurement.</p>
+      <p class="fineprint">Routes describe what the model responds to. They never promise approval. Route C is not a documentation mandate. Whether to request statements, and how not to burden applicants who cannot produce them, is the lender’s policy decision.</p>
     </section>
 
     <section id="memo" class="view view-memo" data-view="memo" hidden>
@@ -316,13 +324,6 @@ python -m janus.run_audit</code></pre>
     <p>JANUS · credit model integrity · synthetic book · seed <span data-bind="seed"></span></p>
     <p><a href="https://github.com/venvennnn/janus">GitHub</a> · <a href="#method">Reproduce every figure</a></p>
   </footer>
-
-  <aside class="dock" id="applicant-dock" hidden>
-    <p class="dock-id">A-7100</p>
-    <p>Age 21 · informal income · SE · rural</p>
-    <p>DTI recorded <strong data-bind="demo_applicant.recorded_dti" data-fmt="dti"></strong> · true <strong data-bind="demo_applicant.true_dti" data-fmt="dti"></strong></p>
-    <p>Did not default · <span id="dock-decision">declined</span></p>
-  </aside>
 
   <div class="toast" id="toast" hidden role="status"></div>
 

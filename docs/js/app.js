@@ -216,11 +216,28 @@
     $("#dock-decision").textContent = approved ? "would cross cutoff" : "declined";
   }
 
+  $("#btn-reset-p")?.addEventListener("click", () => {
+    $$(".route").forEach((card) => card.classList.remove("is-live"));
+    $$("[data-apply]").forEach((b) => {
+      b.textContent = "Apply on desk";
+    });
+    setP(pStart);
+    $("#route-reveal").hidden = true;
+  });
+
   $$("[data-apply]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const key = btn.dataset.apply;
       $$(".route").forEach((card) => card.classList.toggle("is-live", card.dataset.route === key));
+      $$("[data-apply]").forEach((b) => {
+        const applied = b.dataset.apply === key;
+        b.textContent = applied ? "Applied on desk" : b.dataset.apply === "c" ? "Apply on desk" : "Apply on desk";
+      });
       setP(routes[key].p_final);
+      const reveal = $("#route-reveal");
+      if (key === "c") {
+        reveal.hidden = false;
+      }
       toast(key === "a" ? "Route A applied — owner desk only" : `Route ${key.toUpperCase()} applied on the desk`);
     });
   });
