@@ -57,12 +57,22 @@ Then visit `http://localhost:8080`.
 
 ### Deploy on GitHub
 
-1. Push this repository.
-2. **Settings → Pages**.
-3. Either:
-   - **GitHub Actions** (recommended). The workflow in `.github/workflows/pages.yml` publishes `docs/` on every push to `main`. First time: open the Actions tab, run **Deploy demo**, then set Pages source to GitHub Actions if prompted.
-   - **Deploy from a branch**: Source = `main` (or this feature branch), folder = `/docs`.
-4. The site will be at `https://<user>.github.io/janus/`.
+The site is the `docs/` folder. No build. Do this once:
+
+1. **Settings → Pages**
+2. **Build and deployment → Source:** Deploy from a branch
+3. **Branch:** `main` (or `cursor/janus-demo-website-3173` before merge) · **Folder:** `/docs`
+4. Save. The site is `https://<user>.github.io/janus/`
+
+That path does not use GitHub Actions and does not need Pages to be pre-created by a workflow.
+
+**Optional — deploy via Actions** after the site exists:
+
+1. **Settings → Pages → Source:** GitHub Actions  
+   (`actions/configure-pages` cannot create the site with `GITHUB_TOKEN`. This click has to be yours.)
+2. Actions → **Deploy demo** → Run workflow
+
+The Actions workflow uses Node 24-native action versions (`checkout@v6`, `configure-pages@v6`, `upload-pages-artifact@v5`, `deploy-pages@v5`) and is `workflow_dispatch` only, so a missing Pages site will not fail every push.
 
 All asset paths are relative. No build step. No API keys. Every displayed figure is bound to `docs/data/findings.json`, which is emitted by the engine.
 
