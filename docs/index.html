@@ -12,22 +12,23 @@
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400&family=Overpass+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./css/app.css">
 </head>
 <body>
-  <a class="skip" href="#stage">Skip to investigation</a>
+  <a class="skip" href="#audit">Skip to audit</a>
   <div class="container">
-    <header>
+    <header class="top">
+      <a class="brand" href="#brief">JANUS</a>
       <nav class="nav" aria-label="Primary">
         <a href="#brief">home</a>
-        <a href="#audit">audit</a>
         <a href="#investigate">investigate</a>
         <a href="#routes">routes</a>
         <a href="#memo">memo</a>
         <a href="#method">method</a>
         <a href="https://github.com/venvennnn/janus" rel="external noopener">github<span class="ext">↗</span></a>
       </nav>
+      <a class="btn btn-sm" href="#audit">Audit your model</a>
     </header>
 
     <p class="dock" id="applicant-dock" hidden>
@@ -42,15 +43,32 @@
 
     <main>
       <section id="brief" class="view" data-view="brief">
-        <h1>JANUS</h1>
-        <p class="tag">credit model integrity<span class="sep">·</span>GOAI 2026</p>
-        <div class="body">
-          <p>JANUS investigates whether a lending model rewards genuine creditworthiness — or merely the ability to manipulate what it sees.</p>
-          <p>It is a red-team agent for credit models. It plans adversarial audits, follows evidence to the segments a model quietly harms, and returns a reproducible case for human model-risk review. Fairness is one branch. The question is simpler: does the model reward the thing it claims to measure?</p>
-          <p>The reference book is a model that passes standard review: <span data-bind="model.auc_holdout" data-fmt="auc"></span> AUC, <span data-bind="model.n_features"></span> features, no protected attributes, cutoff <span data-bind="model.cutoff" data-fmt="p"></span>, <span data-bind="model.approval_rate" data-fmt="pct1"></span> approval. What it misses is below. Every figure traces to a run ID.</p>
-        </div>
+        <p class="kicker">GOAI 2026 · credit model integrity</p>
+        <h1 class="hero">Does this model reward the thing it claims to measure?</h1>
+        <p class="lede">JANUS is a red-team agent for credit models. Claude reads the dictionary. The engine produces every number. You decide what enters the file.</p>
+        <p class="hero-actions">
+          <a class="btn" href="#audit">Audit your model</a>
+          <a class="text-btn" href="#investigate">See the recorded book →</a>
+        </p>
 
-        <h2 class="section-eyebrow">The model</h2>
+        <ol class="paths">
+          <li>
+            <a href="#audit">
+              <span class="num">01</span>
+              <span class="title">Audit your model</span>
+              <span class="subtitle">Upload a scorecard and a labelled holdout. Claude proposes mutability. You confirm. The battery runs.</span>
+            </a>
+          </li>
+          <li>
+            <a href="#investigate">
+              <span class="num">02</span>
+              <span class="title">Recorded book</span>
+              <span class="subtitle">Applicant A-7100. Three routes. The figures already ran. No upload required.</span>
+            </a>
+          </li>
+        </ol>
+
+        <h2 class="section-eyebrow">The reference book</h2>
         <ul class="channels">
           <li><span class="label">AUC</span><span class="value" data-bind="model.auc_holdout" data-fmt="auc"></span></li>
           <li><span class="label">Cutoff</span><span class="value" data-bind="model.cutoff" data-fmt="p"></span></li>
@@ -61,15 +79,10 @@
 
         <h2 class="section-eyebrow">What standard review misses</h2>
         <ol class="writing-list" id="home-findings"></ol>
-        <p>
-          <a class="more" href="#investigate">open the investigation <span class="arrow">→</span></a>
-          <span class="sep">·</span>
-          <a class="more" href="#audit">audit a model <span class="arrow">→</span></a>
-        </p>
       </section>
 
       <section id="audit" class="view" data-view="audit" hidden>
-        <h1>Audit a model</h1>
+        <h1>Audit your model</h1>
         <p class="tag">five inputs<span class="sep">·</span>one human gate</p>
         <div class="body">
           <p>Upload a credit model and a labelled holdout. Claude reads the feature dictionary and proposes how each feature can move. You confirm. The engine then runs the same battery that produced the recorded demo. Claude reads those figures and writes the investigation. It never invents a number.</p>
@@ -110,7 +123,7 @@
             <p class="hint">Optional. Lender, product, what is verified at application.</p>
           </div>
           <p>
-            <button type="submit" class="text-btn" id="btn-propose">propose mutability →</button>
+            <button type="submit" class="btn" id="btn-propose">Propose mutability</button>
           </p>
           <p class="fineprint" id="propose-status"></p>
         </form>
@@ -140,7 +153,7 @@
             <span>I confirm these mutability assumptions for this lender</span>
           </label>
           <p>
-            <button type="button" class="text-btn" id="btn-run-upload">run the battery →</button>
+            <button type="button" class="btn" id="btn-run-upload">Run the battery</button>
           </p>
           <p class="fineprint" id="run-status"></p>
         </div>
