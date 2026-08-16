@@ -3,327 +3,246 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>JANUS — credit model integrity</title>
+  <title>JANUS</title>
   <meta name="description" content="JANUS investigates whether a lending model rewards genuine creditworthiness — or merely the ability to manipulate what it sees.">
-  <meta name="theme-color" content="#ffffff">
-  <meta property="og:title" content="JANUS — the autonomous red-team agent for credit models">
-  <meta property="og:description" content="Does this model reward the thing it claims to measure? One applicant. Three routes. A reproducible case for model-risk review.">
+  <meta name="theme-color" content="#fcfaf6">
+  <meta property="og:title" content="JANUS — credit model integrity">
+  <meta property="og:description" content="Does this model reward the thing it claims to measure?">
   <meta property="og:type" content="website">
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400&family=Overpass+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./css/app.css">
 </head>
 <body>
   <a class="skip" href="#stage">Skip to investigation</a>
+  <div class="container">
+    <header>
+      <nav class="nav" aria-label="Primary">
+        <a href="#brief">home</a>
+        <a href="#investigate">investigate</a>
+        <a href="#routes">routes</a>
+        <a href="#memo">memo</a>
+        <a href="#method">method</a>
+        <a href="https://github.com/venvennnn/janus" rel="external noopener">github<span class="ext">↗</span></a>
+      </nav>
+    </header>
 
-  <header class="topbar">
-    <a class="brand" href="#brief" aria-label="JANUS home">
-      <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
-        <path d="M18 14h28v36H18z" fill="none" stroke="currentColor" stroke-width="2.2"/>
-        <path d="M18 14c8 8 8 28 0 36" fill="none" stroke="currentColor" stroke-width="2.2"/>
-        <path d="M46 14c-8 8-8 28 0 36" fill="none" stroke="currentColor" stroke-width="2.2"/>
-        <circle cx="26" cy="30" r="1.6" fill="currentColor"/>
-        <circle cx="38" cy="30" r="1.6" fill="currentColor"/>
-      </svg>
-      <span>JANUS</span>
-    </a>
-    <nav class="nav" aria-label="Primary">
-      <a href="#brief">Brief</a>
-      <a href="#investigate">Investigate</a>
-      <a href="#routes">Routes</a>
-      <a href="#memo">Memo</a>
-      <a href="#method">Method</a>
-    </nav>
-    <p class="topbar-meta">GOAI 2026</p>
-  </header>
+    <p class="dock" id="applicant-dock" hidden>
+      <span class="dock-id">A-7100</span>
+      <span class="sep">·</span>
+      age 21, informal income
+      <span class="sep">·</span>
+      DTI <span data-bind="demo_applicant.recorded_dti" data-fmt="dti"></span> recorded, <span data-bind="demo_applicant.true_dti" data-fmt="dti"></span> true
+      <span class="sep">·</span>
+      <span id="dock-decision">declined</span>
+    </p>
 
-  <aside class="dock" id="applicant-dock" hidden>
-    <p class="dock-id">A-7100</p>
-    <p>Age 21 · informal income · self-employed · rural</p>
-    <p>DTI recorded <strong data-bind="demo_applicant.recorded_dti" data-fmt="dti"></strong> · true <strong data-bind="demo_applicant.true_dti" data-fmt="dti"></strong></p>
-    <p>Did not default · <span id="dock-decision">declined</span></p>
-  </aside>
-
-  <main>
-    <section id="brief" class="view view-brief" data-view="brief">
-      <div class="brief-hero">
-        <p class="kicker">Credit model integrity · not another fairness deck</p>
-        <h1>Does this model reward creditworthiness — or the ability to manipulate what it sees?</h1>
-        <p class="lede">JANUS is the autonomous red-team agent for lending models. It plans adversarial audits, follows evidence to the segments a model quietly harms, and returns a reproducible case for human model-risk review.</p>
-        <div class="hero-actions">
-          <a class="btn btn-gold" href="#investigate">Open the investigation</a>
-          <a class="btn btn-ghost" href="#routes">Skip to A-7100</a>
+    <main>
+      <section id="brief" class="view" data-view="brief">
+        <h1>JANUS</h1>
+        <p class="tag">credit model integrity<span class="sep">·</span>GOAI 2026</p>
+        <div class="body">
+          <p>JANUS investigates whether a lending model rewards genuine creditworthiness — or merely the ability to manipulate what it sees.</p>
+          <p>It is a red-team agent for credit models. It plans adversarial audits, follows evidence to the segments a model quietly harms, and returns a reproducible case for human model-risk review. Fairness is one branch. The question is simpler: does the model reward the thing it claims to measure?</p>
+          <p>The reference book is a model that passes standard review: <span data-bind="model.auc_holdout" data-fmt="auc"></span> AUC, <span data-bind="model.n_features"></span> features, no protected attributes, cutoff <span data-bind="model.cutoff" data-fmt="p"></span>, <span data-bind="model.approval_rate" data-fmt="pct1"></span> approval. What it misses is below. Every figure traces to a run ID.</p>
         </div>
-      </div>
 
-      <aside class="model-card" aria-label="Reference scorecard">
-        <p class="card-stamp">Passes standard review</p>
-        <h2>The model under audit</h2>
-        <dl class="stat-grid">
-          <div><dt>Holdout AUC</dt><dd data-bind="model.auc_holdout" data-fmt="auc"></dd></div>
-          <div><dt>Features</dt><dd data-bind="model.n_features"></dd></div>
-          <div><dt>Protected attrs</dt><dd>none</dd></div>
-          <div><dt>Cutoff</dt><dd data-bind="model.cutoff" data-fmt="p"></dd></div>
-          <div><dt>Approval</dt><dd data-bind="model.approval_rate" data-fmt="pct1"></dd></div>
-          <div><dt>Holdout</dt><dd><span data-bind="model.n_holdout" data-fmt="int"></span></dd></div>
-        </dl>
-        <p class="card-note">Heaviest feature: <strong data-bind="model.heaviest_feature"></strong>. Every figure on this page traces to a run ID.</p>
-      </aside>
+        <h2 class="section-eyebrow">The model</h2>
+        <ul class="channels">
+          <li><span class="label">AUC</span><span class="value" data-bind="model.auc_holdout" data-fmt="auc"></span></li>
+          <li><span class="label">Cutoff</span><span class="value" data-bind="model.cutoff" data-fmt="p"></span></li>
+          <li><span class="label">Approval</span><span class="value" data-bind="model.approval_rate" data-fmt="pct1"></span></li>
+          <li><span class="label">Holdout</span><span class="value" data-bind="model.n_holdout" data-fmt="int"></span></li>
+          <li><span class="label">Heaviest</span><span class="value" data-bind="model.heaviest_feature"></span></li>
+        </ul>
 
-      <div class="triptych" aria-label="Integrity map">
-        <article>
-          <h3>Gameable</h3>
-          <p>Attack surface. Integrity gap. Cosmetic features the model treats as capacity.</p>
-        </article>
-        <article>
-          <h3>Exclusion</h3>
-          <p>Proxy leakage. Unexplained gap. A recourse menu when the gap is measurement, not risk.</p>
-        </article>
-        <article>
-          <h3>Reliability</h3>
-          <p>Broken segments. Miscalibration. Leaves where predicted risk is not the risk that arrives.</p>
-        </article>
-      </div>
-    </section>
+        <h2 class="section-eyebrow">What standard review misses</h2>
+        <ol class="writing-list" id="home-findings"></ol>
+        <p><a class="more" href="#investigate">open the investigation <span class="arrow">→</span></a></p>
+      </section>
 
-    <section id="investigate" class="view view-console" data-view="investigate" hidden>
-      <aside class="rail" aria-label="Investigation steps">
-        <p class="rail-kicker">Mandatory battery, then intelligence</p>
+      <section id="investigate" class="view" data-view="investigate" hidden>
+        <h1>Investigate</h1>
+        <p class="tag">coverage first, then intelligence</p>
         <ol class="steps">
-          <li><button type="button" data-step="0" class="is-active">Mutability gate</button></li>
-          <li><button type="button" data-step="1">Battery</button></li>
-          <li><button type="button" data-step="2">Are they safer?</button></li>
-          <li><button type="button" data-step="3">Integrity gap</button></li>
-          <li><button type="button" data-step="4">Why so expensive?</button></li>
-          <li><button type="button" data-step="5">Three routes</button></li>
+          <li><button type="button" data-step="0" class="is-active">mutability</button></li>
+          <li><button type="button" data-step="1">battery</button></li>
+          <li><button type="button" data-step="2">safer?</button></li>
+          <li><button type="button" data-step="3">gap</button></li>
+          <li><button type="button" data-step="4">why</button></li>
+          <li><button type="button" data-step="5">routes</button></li>
         </ol>
-        <div class="rail-actions">
-          <button type="button" class="btn btn-ghost" id="btn-play">Play</button>
-          <button type="button" class="btn btn-ghost" id="btn-prev">Back</button>
-          <button type="button" class="btn btn-gold" id="btn-next">Next</button>
+        <p class="step-nav">
+          <button type="button" class="text-btn" id="btn-prev">back</button>
+          <span class="sep">·</span>
+          <button type="button" class="text-btn" id="btn-play">play</button>
+          <span class="sep">·</span>
+          <button type="button" class="text-btn" id="btn-next">next →</button>
+        </p>
+
+        <div id="stage" class="stage" tabindex="-1">
+          <article class="panel" data-panel="0">
+            <h2>Propose the feature mutability model</h2>
+            <div class="body">
+              <p>Whether <code>savings_balance</code> is cosmetic depends on how this lender verifies it. The agent reads the feature dictionary and proposes; a person signs. Without this gate, Janus works on exactly one model — the one whose lever table was hand-authored.</p>
+            </div>
+            <div class="table-wrap">
+              <table class="grid" id="mutability-table">
+                <thead>
+                  <tr>
+                    <th>Feature</th>
+                    <th>Kind</th>
+                    <th>Fake</th>
+                    <th>Earn</th>
+                    <th>Why</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <label class="gate">
+              <input type="checkbox" id="gate-mutability">
+              <span>I confirm these mutability assumptions for this lender</span>
+            </label>
+          </article>
+
+          <article class="panel" data-panel="1" hidden>
+            <h2>The mandatory battery always runs</h2>
+            <div class="body">
+              <p>A validation report that skipped an audit because the agent did not hypothesise it is worthless. Four audits. Then the part a script cannot do.</p>
+            </div>
+            <ol class="writing-list" id="battery-tiles"></ol>
+          </article>
+
+          <article class="panel" data-panel="2" hidden>
+            <h2>Are the flipped applicants actually lower risk?</h2>
+            <div class="body">
+              <p>The battery found a large cosmetic attack surface. The agent does not stop at “the model is gameable.” It asks whether gamed approvals are the people the model claims to want.</p>
+            </div>
+            <ul class="channels">
+              <li><span class="label">Flipped</span><span class="value" data-bind="battery.attack_surface.flipped_default_rate" data-fmt="pct1" data-run="run.attack_surface"></span></li>
+              <li><span class="label">Baseline</span><span class="value" data-bind="battery.attack_surface.baseline_default_rate" data-fmt="pct1" data-run="run.attack_surface"></span></li>
+            </ul>
+            <p class="body">Gamed approvals are <em>worse</em> than average. The model is not being talked into a safer book.</p>
+          </article>
+
+          <article class="panel" data-panel="3" hidden>
+            <h2>Fake it versus earn it</h2>
+            <div class="body">
+              <p>Two cost functions. They are not interchangeable. The median of per-applicant ratios is the gap — not the ratio of medians.</p>
+            </div>
+            <p class="display" data-bind="battery.integrity_gap.median_gap_ratio" data-fmt="times" data-run="run.integrity_gap"></p>
+            <p class="tag">median integrity gap</p>
+            <ul class="channels">
+              <li><span class="label">Fake it</span><span class="value"><span data-bind="battery.integrity_gap.median_attack_cost_jpy" data-fmt="yen"></span> · one afternoon</span></li>
+              <li><span class="label">Earn it</span><span class="value"><span data-bind="battery.integrity_gap.median_genuine_cost_jpy" data-fmt="yen"></span> · <span data-bind="battery.integrity_gap.median_genuine_days" data-fmt="days"></span></span></li>
+            </ul>
+          </article>
+
+          <article class="panel" data-panel="4" hidden>
+            <h2>The honest route is expensive because the DTI is wrong</h2>
+            <div class="body">
+              <p>Cash income unrecorded → recorded DTI inflates → DTI is the heaviest feature → exclusion follows measurement error, not risk. The correct recourse is not “earn more.” It is “make what you already earn visible.”</p>
+            </div>
+            <ul class="channels">
+              <li><span class="label">Recorded</span><span class="value" data-bind="battery.evidence_recourse.median_recorded_dti" data-fmt="dti" data-run="run.evidence_recourse"></span></li>
+              <li><span class="label">True DTI</span><span class="value" data-bind="battery.evidence_recourse.median_true_dti" data-fmt="dti"></span></li>
+              <li><span class="label">Cross</span><span class="value" data-bind="battery.evidence_recourse.cross_rate_full_documentation" data-fmt="pct1"></span></li>
+              <li><span class="label">Those who do</span><span class="value">default <span data-bind="battery.evidence_recourse.cross_default_rate" data-fmt="pct1"></span> vs <span data-bind="battery.evidence_recourse.portfolio_default_rate" data-fmt="pct1"></span> book</span></li>
+            </ul>
+            <ol class="writing-list" id="doc-curve"></ol>
+          </article>
+
+          <article class="panel" data-panel="5" hidden>
+            <h2>Applicant A-7100</h2>
+            <div class="body">
+              <p>Age 21. Undocumented income. Recorded DTI 1.07 against a true DTI of 0.50. Declined. Did not default. The model asked the wrong question of a person whose finances were already sound.</p>
+            </div>
+            <p><a class="more" href="#routes">three routes, one screen <span class="arrow">→</span></a></p>
+          </article>
         </div>
-      </aside>
+      </section>
 
-      <div id="stage" class="stage" tabindex="-1">
-        <article class="panel" data-panel="0">
-          <p class="eyebrow">Human gate 1 · run.inspect_model</p>
-          <h2>Propose the feature mutability model</h2>
-          <p>Whether <code>savings_balance</code> is cosmetic depends on how this lender verifies it. The agent reads the feature dictionary and proposes; a person signs. Without this gate, Janus works on exactly one model — the one whose lever table was hand-authored.</p>
-          <div class="table-wrap">
-            <table class="grid" id="mutability-table">
-              <thead>
-                <tr>
-                  <th>Feature</th>
-                  <th>Kind</th>
-                  <th>Fake</th>
-                  <th>Earn</th>
-                  <th>Why</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-          <label class="gate">
-            <input type="checkbox" id="gate-mutability">
-            <span>I confirm these mutability assumptions for this lender</span>
-          </label>
-        </article>
-
-        <article class="panel" data-panel="1" hidden>
-          <p class="eyebrow">Tier 1 · coverage first</p>
-          <h2>The mandatory battery always runs</h2>
-          <p>A validation report that skipped an audit because the agent did not hypothesise it is worthless. Four audits. Then the part a script cannot do.</p>
-          <div class="tiles" id="battery-tiles"></div>
-        </article>
-
-        <article class="panel" data-panel="2" hidden>
-          <p class="eyebrow">Tier 2 · H1 · run.attack_surface</p>
-          <h2>Are the flipped applicants actually lower risk?</h2>
-          <p>The battery found a large cosmetic attack surface. The agent does not stop at “the model is gameable.” It asks whether gamed approvals are the people the model claims to want.</p>
-          <div class="compare">
-            <div class="compare-card is-bad">
-              <p class="label">Flipped cohort default</p>
-              <p class="big" data-bind="battery.attack_surface.flipped_default_rate" data-fmt="pct1" data-run="run.attack_surface"></p>
-            </div>
-            <div class="compare-card">
-              <p class="label">Portfolio baseline</p>
-              <p class="big" data-bind="battery.attack_surface.baseline_default_rate" data-fmt="pct1" data-run="run.attack_surface"></p>
-            </div>
-          </div>
-          <p class="verdict">Gamed approvals are <em>worse</em> than average. The model is not being talked into a safer book. It is being talked into a noisier one.</p>
-        </article>
-
-        <article class="panel" data-panel="3" hidden>
-          <p class="eyebrow">Integrity gap · run.integrity_gap</p>
-          <h2>Fake it versus earn it</h2>
-          <p>Two cost functions. They are not interchangeable. The median of per-applicant ratios is the gap — not the ratio of medians.</p>
-          <div class="gap-hero">
-            <p class="gap-ratio"><span data-bind="battery.integrity_gap.median_gap_ratio" data-fmt="times" data-run="run.integrity_gap"></span></p>
-            <p class="gap-caption">median integrity gap</p>
-          </div>
-          <div class="compare">
-            <div class="compare-card is-a">
-              <p class="label">Route A · fake it</p>
-              <p class="big" data-bind="battery.integrity_gap.median_attack_cost_jpy" data-fmt="yen" data-run="run.integrity_gap"></p>
-              <p class="sub">one afternoon · model owner only</p>
-            </div>
-            <div class="compare-card is-b">
-              <p class="label">Route B · earn it</p>
-              <p class="big" data-bind="battery.integrity_gap.median_genuine_cost_jpy" data-fmt="yen" data-run="run.integrity_gap"></p>
-              <p class="sub"><span data-bind="battery.integrity_gap.median_genuine_days" data-fmt="days"></span></p>
-            </div>
-          </div>
-        </article>
-
-        <article class="panel" data-panel="4" hidden>
-          <p class="eyebrow">H2 / H4 · run.evidence_recourse</p>
-          <h2>The honest route is expensive because the DTI is wrong</h2>
-          <p>Cash income unrecorded → apparent debt-to-income inflates → DTI is the heaviest feature → exclusion follows measurement error, not risk. For these applicants the correct recourse is not “earn more.” It is “make what you already earn visible.”</p>
-          <div class="compare">
-            <div class="compare-card">
-              <p class="label">Median recorded DTI</p>
-              <p class="big" data-bind="battery.evidence_recourse.median_recorded_dti" data-fmt="dti" data-run="run.evidence_recourse"></p>
-            </div>
-            <div class="compare-card is-c">
-              <p class="label">Median true DTI</p>
-              <p class="big" data-bind="battery.evidence_recourse.median_true_dti" data-fmt="dti" data-run="run.evidence_recourse"></p>
-            </div>
-          </div>
-          <div class="tiles two">
-            <article>
-              <p class="label">Cross on documentation alone</p>
-              <p class="big" data-bind="battery.evidence_recourse.cross_rate_full_documentation" data-fmt="pct1"></p>
-              <p class="sub">declined informal-income · n=<span data-bind="battery.evidence_recourse.n_declined_informal" data-fmt="int"></span></p>
-            </article>
-            <article>
-              <p class="label">Those who cross, default</p>
-              <p class="big" data-bind="battery.evidence_recourse.cross_default_rate" data-fmt="pct1"></p>
-              <p class="sub">vs <span data-bind="battery.evidence_recourse.portfolio_default_rate" data-fmt="pct1"></span> portfolio — safer</p>
-            </article>
-          </div>
-          <div id="doc-curve" class="curve" aria-label="Documentation continuum"></div>
-        </article>
-
-        <article class="panel" data-panel="5" hidden>
-          <p class="eyebrow">Demo spine · one applicant, three routes, one screen</p>
-          <h2>Applicant A-7100</h2>
-          <p>Age 21. Undocumented income. Recorded DTI 1.07 against a true DTI of 0.50. Declined. Did not default. The model asked the wrong question of a person whose finances were already sound.</p>
-          <p><a class="btn btn-gold" href="#routes">Open the three-route desk</a></p>
-        </article>
-      </div>
-    </section>
-
-    <section id="routes" class="view view-routes" data-view="routes" hidden>
-      <div class="routes-head">
-        <div>
-          <p class="eyebrow">Recourse desk · run.recourse_menu</p>
-          <h2>The model’s response to three kinds of improvement. Only one is free.</h2>
+      <section id="routes" class="view" data-view="routes" hidden>
+        <h1>Three routes</h1>
+        <p class="tag">one applicant<span class="sep">·</span>A-7100</p>
+        <div class="body">
           <p>A single path is fragile. Janus returns the top routes within an effort budget. Route A is a defender finding — never shown to the applicant. Routes B and C are what a policy owner can actually offer.</p>
+          <p>
+            <span class="mono">p = <span id="p-now"></span></span>
+            <span class="sep">·</span>
+            cutoff <span class="mono" data-bind="model.cutoff" data-fmt="p"></span>
+            <span class="sep">·</span>
+            <span id="p-decision">DECLINED</span>
+            <span class="sep">·</span>
+            <button type="button" class="text-btn" id="btn-reset-p">show original</button>
+          </p>
         </div>
-        <div class="p-meter" aria-label="Predicted default versus cutoff">
-          <div class="p-meter-scale">
-            <span class="p-tick" id="p-cutoff-tick"></span>
-            <span class="p-needle" id="p-needle"></span>
-          </div>
-          <p><span class="mono">p = <span id="p-now"></span></span> · cutoff <span class="mono" data-bind="model.cutoff" data-fmt="p"></span> · <span id="p-decision">DECLINED</span> · <button type="button" class="text-btn" id="btn-reset-p">Show original</button></p>
+        <span id="p-needle" hidden></span>
+        <span id="p-cutoff-tick" hidden></span>
+
+        <ol class="writing-list route-list">
+          <li class="route" data-route="a">
+            <span class="num">A</span>
+            <span class="title">Fake it</span>
+            <span class="date" id="cost-a"></span>
+            <span class="subtitle">Manipulate cosmetic features. <span id="time-a"></span>. <span id="p-a"></span>. Model owner only.</span>
+            <button type="button" class="text-btn" data-apply="a">apply →</button>
+          </li>
+          <li class="route" data-route="b">
+            <span class="num">B</span>
+            <span class="title">Earn it</span>
+            <span class="date" id="cost-b"></span>
+            <span class="subtitle">Genuine financial improvement. <span id="time-b"></span>. <span id="p-b"></span>.</span>
+            <button type="button" class="text-btn" data-apply="b">apply →</button>
+          </li>
+          <li class="route" data-route="c">
+            <span class="num">C</span>
+            <span class="title">Document it</span>
+            <span class="date" id="cost-c">¥0</span>
+            <span class="subtitle">Change nothing. Make existing income visible. <span id="time-c"></span>. <span id="p-c"></span>.</span>
+            <button type="button" class="text-btn" data-apply="c">apply →</button>
+          </li>
+        </ol>
+        <p class="reveal" id="route-reveal" hidden>Documentation alone takes A-7100 across the cutoff. No money moved. The exclusion was measurement error — and the remedy is measurement.</p>
+        <p class="fineprint">Routes describe what the model responds to. They never promise approval. Route C is not a documentation mandate.</p>
+      </section>
+
+      <section id="memo" class="view" data-view="memo" hidden>
+        <h1>Findings memo</h1>
+        <p class="tag">human gate 2<span class="sep">·</span>seed <span data-bind="seed"></span></p>
+        <div class="body">
+          <p>Accept or reject each finding. Janus produces evidence; a person decides.</p>
         </div>
-      </div>
-
-      <div class="route-grid" role="list">
-        <article class="route route-a" role="listitem" data-route="a">
-          <p class="stamp stamp-warn">Model owner only</p>
-          <h3>A · Fake it</h3>
-          <p class="route-ask">Manipulate cosmetic features</p>
-          <p class="route-cost" id="cost-a"></p>
-          <p class="route-time" id="time-a"></p>
-          <p class="route-p" id="p-a"></p>
-          <button type="button" class="btn btn-ghost" data-apply="a">Apply on desk</button>
-        </article>
-        <article class="route route-b" role="listitem" data-route="b">
-          <p class="stamp">Genuine</p>
-          <h3>B · Earn it</h3>
-          <p class="route-ask">Genuine financial improvement</p>
-          <p class="route-cost" id="cost-b"></p>
-          <p class="route-time" id="time-b"></p>
-          <p class="route-p" id="p-b"></p>
-          <button type="button" class="btn btn-ghost" data-apply="b">Apply on desk</button>
-        </article>
-        <article class="route route-c is-featured" role="listitem" data-route="c">
-          <p class="stamp stamp-gold">Measurement, not money</p>
-          <h3>C · Document it</h3>
-          <p class="route-ask">Change nothing. Make existing income visible.</p>
-          <p class="route-cost" id="cost-c">¥0</p>
-          <p class="route-time" id="time-c"></p>
-          <p class="route-p" id="p-c"></p>
-          <button type="button" class="btn btn-gold" data-apply="c">Apply on desk</button>
-        </article>
-      </div>
-      <p class="reveal" id="route-reveal" hidden>Documentation alone takes A-7100 across the cutoff. No money moved. The exclusion was measurement error — and the remedy is measurement.</p>
-      <p class="fineprint">Routes describe what the model responds to. They never promise approval. Route C is not a documentation mandate. Whether to request statements, and how not to burden applicants who cannot produce them, is the lender’s policy decision.</p>
-    </section>
-
-    <section id="memo" class="view view-memo" data-view="memo" hidden>
-      <div class="paper">
-        <p class="eyebrow ink">Human gate 2 · signed audit package</p>
-        <h2>Findings memo</h2>
-        <p class="memo-meta">Reference scorecard · seed <span data-bind="seed"></span> · holdout n=<span data-bind="model.n_holdout" data-fmt="int"></span>. Accept or reject each finding. Janus produces evidence; a person decides.</p>
-        <ol class="findings" id="findings-list"></ol>
-        <label class="gate ink">
+        <ol class="findings writing-list" id="findings-list"></ol>
+        <label class="gate">
           <input type="checkbox" id="gate-findings">
           <span>I accept the checked findings for the validation file</span>
         </label>
-        <p class="sign-line" id="sign-status">Package unsigned.</p>
-      </div>
-    </section>
+        <p class="tag" id="sign-status">Package unsigned.</p>
+      </section>
 
-    <section id="method" class="view view-method" data-view="method" hidden>
-      <div class="method-grid">
-        <article>
-          <h2>The split is the compliance story</h2>
+      <section id="method" class="view" data-view="method" hidden>
+        <h1>Method</h1>
+        <p class="tag">the split is the compliance story</p>
+        <div class="body">
           <p>The LLM decides what to investigate and what matters. It never produces a number. Every claim dereferences to a recorded run. A hallucinated statistic is structurally impossible, not merely discouraged.</p>
-          <ol class="plain">
-            <li>Elicit feature mutability → human gate</li>
-            <li>Run the mandatory battery</li>
-            <li>Form hypotheses from surprises</li>
-            <li>Design and run follow-up experiments</li>
-            <li>Judge materiality</li>
-            <li>Synthesise the memo from the investigation graph</li>
-          </ol>
-        </article>
-        <article>
-          <h2>Figure discipline</h2>
-          <p>Only numbers from <code>run_audit.py</code>, <code>integrity_gap</code>, and <code>evidence_recourse</code> appear here. Two attack-cost medians exist and are not interchangeable: the attack-surface sample and the dual-path integrity-gap sample.</p>
+          <p>Elicit feature mutability → human gate. Run the mandatory battery. Form hypotheses from surprises. Design and run follow-up experiments. Judge materiality. Synthesise the memo from the investigation graph.</p>
+          <p>Only numbers from <code>run_audit.py</code>, <code>integrity_gap</code>, and <code>evidence_recourse</code> appear here. Two attack-cost medians exist and are not interchangeable.</p>
           <p>Reproduce locally:</p>
           <pre><code>pip install -e .
 python -m janus.run_audit</code></pre>
           <p>Demo data is synthetic. Generation logic and every planted mechanism are documented in <code>janus/data_gen.py</code>. No real applicant data is used.</p>
-        </article>
-        <article class="span-2">
-          <h2>The turn worth rehearsing</h2>
-          <p>The battery says the model is gameable. The follow-up says gamed approvals are worse. The integrity gap says the honest path is two orders of magnitude more expensive. Then the recorded/true DTI split appears — and Route C is free. The people the model excludes could be approved for nothing. That is the case file.</p>
-        </article>
-        <article>
-          <h2>Boundaries</h2>
-          <ul class="plain">
-            <li>Janus does not make credit decisions.</li>
-            <li>Attack recipes stay with the model owner. Aggregate only elsewhere. Never to applicants.</li>
-            <li>Recourse routes travel through the lender’s adverse-action process.</li>
-            <li>Findings are diagnostic. Remediation stays with the lender.</li>
-          </ul>
-        </article>
-      </div>
-    </section>
-  </main>
-
-  <footer class="site-foot">
-    <p>JANUS · credit model integrity · synthetic book · seed <span data-bind="seed"></span></p>
-    <p><a href="https://github.com/venvennnn/janus">GitHub</a> · <a href="#method">Reproduce every figure</a></p>
-  </footer>
+          <p>The battery says the model is gameable. The follow-up says gamed approvals are worse. The integrity gap says the honest path is two orders of magnitude more expensive. Then the recorded/true DTI split appears — and Route C is free. The people the model excludes could be approved for nothing.</p>
+          <p>Janus does not make credit decisions. Attack recipes stay with the model owner. Recourse routes travel through the lender’s adverse-action process. Findings are diagnostic.</p>
+        </div>
+      </section>
+    </main>
+  </div>
 
   <div class="toast" id="toast" hidden role="status"></div>
-
   <script src="./data/findings.js"></script>
   <script src="./js/app.js"></script>
 </body>
