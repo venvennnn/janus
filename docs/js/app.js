@@ -113,7 +113,7 @@
   let playing = false;
   $("#btn-play")?.addEventListener("click", () => {
     playing = !playing;
-    $("#btn-play").textContent = playing ? "Pause" : "Play";
+    $("#btn-play").textContent = playing ? "pause" : "play";
     if (playing) tick();
   });
   function tick() {
@@ -161,11 +161,12 @@
     ];
     $("#battery-tiles").innerHTML = tiles
       .map(
-        (t) => `<article>
-          <p class="label">${t.k}</p>
-          <p class="big" title="${t.run}">${t.v}</p>
-          <p class="sub">${t.s}</p>
-        </article>`
+        (t, i) => `<li title="${t.run}">
+          <span class="num">№ ${String(i + 1).padStart(2, "0")}</span>
+          <span class="title">${t.k}</span>
+          <span class="date">${t.v}</span>
+          <span class="subtitle">${t.s}</span>
+        </li>`
       )
       .join("");
   }
@@ -174,11 +175,12 @@
     const curve = J.battery.evidence_recourse.documentation_curve || [];
     $("#doc-curve").innerHTML = curve
       .map(
-        (c) => `<div class="bar">
-          <span class="label">${Math.round(c.documented_share * 100)}% documented</span>
-          <b>${fmt.pct1(c.cross_rate)}</b>
-          <span class="sub">cross the cutoff</span>
-        </div>`
+        (c, i) => `<li>
+          <span class="num">№ ${String(i + 1).padStart(2, "0")}</span>
+          <span class="title">${Math.round(c.documented_share * 100)}% documented</span>
+          <span class="date">${fmt.pct1(c.cross_rate)}</span>
+          <span class="subtitle">cross the cutoff</span>
+        </li>`
       )
       .join("");
   }
@@ -202,13 +204,9 @@
     $("#time-c").textContent = `${routes.c.documentation_months} months of statements`;
     $("#p-c").textContent = `${fmt.p(routes.c.p_start)} → ${fmt.p(routes.c.p_final)} · DTI ${fmt.dti(routes.c.dti_start)} → ${fmt.dti(routes.c.dti_final)}`;
     setP(pStart);
-    const cutPct = Math.min(98, Math.max(2, (cutoff / 0.8) * 100));
-    $("#p-cutoff-tick").style.left = `${cutPct}%`;
   }
 
   function setP(p) {
-    const pct = Math.min(98, Math.max(2, (p / 0.8) * 100));
-    $("#p-needle").style.left = `${pct}%`;
     $("#p-now").textContent = fmt.p(p);
     const approved = p < cutoff;
     $("#p-decision").textContent = approved ? "APPROVED" : "DECLINED";
@@ -220,7 +218,7 @@
   $("#btn-reset-p")?.addEventListener("click", () => {
     $$(".route").forEach((card) => card.classList.remove("is-live"));
     $$("[data-apply]").forEach((b) => {
-      b.textContent = "Apply on desk";
+      b.textContent = "apply →";
     });
     setP(pStart);
     $("#route-reveal").hidden = true;
@@ -231,8 +229,7 @@
       const key = btn.dataset.apply;
       $$(".route").forEach((card) => card.classList.toggle("is-live", card.dataset.route === key));
       $$("[data-apply]").forEach((b) => {
-        const applied = b.dataset.apply === key;
-        b.textContent = applied ? "Applied on desk" : b.dataset.apply === "c" ? "Apply on desk" : "Apply on desk";
+        b.textContent = b.dataset.apply === key ? "applied" : "apply →";
       });
       setP(routes[key].p_final);
       const reveal = $("#route-reveal");
@@ -247,18 +244,27 @@
     const list = $("#findings-list");
     list.innerHTML = J.investigation.findings
       .map(
-        (f) => `<li>
-          <label>
-            <input type="checkbox" class="finding-box" data-id="${f.id}" checked>
-            <span>
-              <strong>${f.id} · ${f.title}</strong>
-              <span class="run"> ${f.run_id} · ${f.severity}</span>
-              <br>${f.claim}
-            </span>
-          </label>
+        (f, i) => `<li>
+          <span class="num">№ ${String(i + 1).padStart(2, "0")}</span>
+          <span class="title"><label><input type="checkbox" class="finding-box" data-id="${f.id}" checked> ${f.title}</label></span>
+          <span class="date">${f.severity}</span>
+          <span class="subtitle">${f.claim} <span class="run">${f.run_id}</span></span>
         </li>`
       )
       .join("");
+    const home = $("#home-findings");
+    if (home) {
+      home.innerHTML = J.investigation.findings
+        .map(
+          (f, i) => `<li>
+            <span class="num">№ ${String(i + 1).padStart(2, "0")}</span>
+            <span class="title">${f.title}</span>
+            <span class="date">${f.severity}</span>
+            <span class="subtitle">${f.claim}</span>
+          </li>`
+        )
+        .join("");
+    }
   }
 
   function updateSign() {
