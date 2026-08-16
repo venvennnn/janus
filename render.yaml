@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: janus
+    runtime: python
+    plan: free
+    buildCommand: pip install -e ".[serve]"
+    startCommand: uvicorn janus.server:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: JANUS_SERVE_DOCS
+        value: "1"
+      - key: PYTHON_VERSION
+        value: "3.11.9"

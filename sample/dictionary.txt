@@ -1,0 +1,16 @@
+Feature dictionary for the JANUS sample scorecard.
+Approval cutoff for this fitted pipeline: 0.275
+
+age: Immutable.
+employment_months: Tenure only moves with time. Not priced as an earn-it lever.
+savings_balance: Unverified snapshot. A same-day transfer presents a higher balance; earning it takes a pay cycle.
+debt_to_income: Genuine path: earn more or retire debt. Documentation of existing income is Route C, not this lever.
+credit_inquiries_12m: Timing artefact. Suppressing inquiries is cosmetic. Ageing them out is not a financial improvement.
+open_trade_lines: Closing a trade to move a score is possible but weak on this book; left inert.
+credit_history_months: Ages only with time beyond the audit horizon.
+postal_density: Geography. The rural proxy. Moving house is outside the recourse window.
+credit_utilization: Balance can be parked on another card (cosmetic) or repaid (genuine).
+requested_amount: Applicant choice. Asking for less does not change capacity and is not an integrity lever.
+late_payments_24m: Bureau history. Not legitimately editable inside an application window.
+residence_months: Time at address. Not a one-cycle lever.
+bank_relationship_months: Relationship length is calendar time.

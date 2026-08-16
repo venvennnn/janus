@@ -42,8 +42,8 @@ def investigate(battery: dict[str, Any], model: dict[str, Any]) -> dict[str, Any
 
 def _hypotheses(battery: dict, model: dict) -> list[dict]:
     hyps = []
-    atk = battery["attack_surface"]
-    if atk["flip_rate"] >= 0.25:
+    atk = battery.get("attack_surface") or {}
+    if not atk.get("skipped") and (atk.get("flip_rate") or 0) >= 0.25:
         hyps.append(
             {
                 "id": "H1",
@@ -52,8 +52,16 @@ def _hypotheses(battery: dict, model: dict) -> list[dict]:
                 "test": "Compare realised default of the flipped cohort to the portfolio baseline.",
             }
         )
-    excl = battery["unexplained_exclusion"]
-    if excl["approval_gap_pp"] >= 8 and abs(excl["default_gap_pp"]) < 4:
+    excl = battery.get("unexplained_exclusion") or {}
+    gap_pp = excl.get("approval_gap_pp")
+    def_gap = excl.get("default_gap_pp")
+    if (
+        not excl.get("skipped")
+        and gap_pp is not None
+        and def_gap is not None
+        and gap_pp >= 8
+        and abs(def_gap) < 4
+    ):
         hyps.append(
             {
                 "id": "H2",
@@ -62,8 +70,8 @@ def _hypotheses(battery: dict, model: dict) -> list[dict]:
                 "test": "Re-score after documenting the recorded/true income gap (evidence_recourse).",
             }
         )
-    proxy = battery["proxy_audit"]
-    if proxy["probe_auc"] >= 0.9:
+    proxy = battery.get("proxy_audit") or {}
+    if not proxy.get("skipped") and (proxy.get("probe_auc") or 0) >= 0.9:
         hyps.append(
             {
                 "id": "H3",
@@ -72,8 +80,8 @@ def _hypotheses(battery: dict, model: dict) -> list[dict]:
                 "test": "Name the carrier. Do not treat geography as an integrity lever.",
             }
         )
-    gap = battery["integrity_gap"]
-    if (gap.get("median_gap_ratio") or 0) >= 10:
+    gap = battery.get("integrity_gap") or {}
+    if not gap.get("skipped") and (gap.get("median_gap_ratio") or 0) >= 10:
         hyps.append(
             {
                 "id": "H4",
@@ -105,146 +113,177 @@ def _follow_ups(hypotheses: list[dict], battery: dict) -> list[dict]:
             }
         )
     if "H2" in ids:
-        ev = battery["evidence_recourse"]
+        ev = battery.get("evidence_recourse") or {}
+        if ev.get("skipped"):
+            result = ev.get("reason") or "Route C skipped — no recorded/true income gap on this book."
+        else:
+            result = (
+                f"{ev.get('cross_rate_full_documentation')} of declined informal-income "
+                f"applicants cross the cutoff on documentation alone. "
+                f"Those who cross default at {ev.get('cross_default_rate')}."
+            )
         out.append(
             {
                 "id": "E.H2",
                 "hypothesis": "H2",
                 "experiment": "evidence_recourse full documentation",
-                "run_id": ev["run_id"],
-                "result": (
-                    f"{ev['cross_rate_full_documentation']} of declined informal-income "
-                    f"applicants cross the cutoff on documentation alone. "
-                    f"Those who cross default at {ev['cross_default_rate']}."
-                ),
+                "run_id": ev.get("run_id", "run.evidence_recourse"),
+                "result": result,
             }
         )
     if "H4" in ids:
-        ev = battery["evidence_recourse"]
+        ev = battery.get("evidence_recourse") or {}
+        result = (
+            ev.get("reason")
+            if ev.get("skipped")
+            else (
+                "The honest *financial* route is expensive because recorded DTI is wrong. "
+                "The correct honest route is documentation: ¥0."
+            )
+        )
         out.append(
             {
                 "id": "E.H4",
                 "hypothesis": "H4",
                 "experiment": "route_c vs earn-it",
-                "run_id": ev["run_id"],
-                "result": (
-                    "The honest *financial* route is expensive because recorded DTI is wrong. "
-                    "The correct honest route is documentation: ¥0."
-                ),
+                "run_id": ev.get("run_id", "run.evidence_recourse"),
+                "result": result,
             }
         )
     return out
 
 
 def _materiality(battery: dict, model: dict) -> list[dict]:
-    atk = battery["attack_surface"]
-    proxy = battery["proxy_audit"]
-    excl = battery["unexplained_exclusion"]
-    segs = battery["broken_segments"]
-    gap = battery["integrity_gap"]
-    ev = battery["evidence_recourse"]
-    young = segs["young_self_employed"]
+    atk = battery.get("attack_surface") or {}
+    proxy = battery.get("proxy_audit") or {}
+    excl = battery.get("unexplained_exclusion") or {}
+    segs = battery.get("broken_segments") or {}
+    gap = battery.get("integrity_gap") or {}
+    ev = battery.get("evidence_recourse") or {}
+    young = segs.get("young_self_employed") or {}
     worst = segs.get("worst_understated")
-    findings = [
-        {
-            "id": "F01",
-            "title": "Gaming surface",
-            "severity": "high" if atk["flip_rate"] >= 0.35 else "medium",
-            "accepted": True,
-            "run_id": atk["run_id"],
-            "claim": (
-                f"{_pct(atk['flip_rate'])} of declined applicants are flippable by cosmetic change "
-                f"(n={atk['n_sampled']}, ¥{int(atk['budget_jpy']/1000)}k budget); "
-                f"median attack cost ¥{atk['median_cost_jpy']}. "
-                f"Flipped cohort defaults at {_pct(atk['flipped_default_rate'])} vs "
-                f"{_pct(atk['baseline_default_rate'])} baseline."
-            ),
-        },
-        {
-            "id": "F02",
-            "title": "Proxy reconstruction",
-            "severity": "high" if proxy["probe_auc"] >= 0.95 else "medium",
-            "accepted": True,
-            "run_id": proxy["run_id"],
-            "claim": (
-                f"Rural residence is recoverable from model-visible features at "
-                f"{proxy['probe_auc']} AUC, carried chiefly by {proxy['chief_carrier']}. "
-                "The model was never given it."
-            ),
-        },
-        {
-            "id": "F03",
-            "title": "Unexplained exclusion",
-            "severity": "high" if excl["approval_gap_pp"] >= 15 else "medium",
-            "accepted": True,
-            "run_id": excl["run_id"],
-            "claim": (
-                f"Undocumented-income applicants approved {excl['approval_gap_pp']}pp less often; "
-                f"realised default { _pct(excl['default_informal'])} vs {_pct(excl['default_formal'])}."
-            ),
-        },
-        {
-            "id": "F04",
-            "title": "Broken segments",
-            "severity": "medium",
-            "accepted": True,
-            "run_id": segs["run_id"],
-            "claim": (
-                (
-                    f"Worst understated leaf (n={worst['n']}): predicted {_pct(worst['predicted_default'])} "
-                    f"vs actual {_pct(worst['actual_default'])}. "
-                    if worst
-                    else ""
-                )
-                + (
-                    f"Young self-employed (n={young['n']}): predicted {_pct(young['predicted_default'])} "
-                    f"vs actual {_pct(young['actual_default'])}; "
-                    f"approved {_pct(young['approval_rate'])} vs {_pct(model['approval_rate'])} overall."
-                    if young.get("n")
-                    else ""
-                )
-            ),
-        },
-        {
-            "id": "F05",
-            "title": "Integrity gap",
-            "severity": "high" if (gap.get("median_gap_ratio") or 0) >= 20 else "medium",
-            "accepted": True,
-            "run_id": gap["run_id"],
-            "claim": (
-                f"{gap['median_gap_ratio']}× median. Fake it: ¥{gap['median_attack_cost_jpy']}. "
-                f"Earn it: ¥{gap['median_genuine_cost_jpy']} / {gap['median_genuine_days']} days. "
-                f"{_pct(gap['would_not_have_defaulted_among_gameable'])} of gameable declines would not have defaulted."
-            ),
-        },
-        {
-            "id": "F06",
-            "title": "Evidence recourse",
-            "severity": "high" if ev["cross_rate_full_documentation"] >= 0.2 else "medium",
-            "accepted": True,
-            "run_id": ev["run_id"],
-            "claim": (
-                f"{_pct(ev['cross_rate_full_documentation'])} of declined informal-income applicants "
-                f"(n={ev['n_declined_informal']}) cross the cutoff on documentation alone. "
-                f"Those who cross default at {_pct(ev['cross_default_rate'])} vs "
-                f"{_pct(ev['portfolio_default_rate'])} portfolio. "
-                f"Among non-defaulters, {_pct(ev['cross_rate_among_non_default'])} cross."
-            ),
-        },
-    ]
+    findings = []
+    if not atk.get("skipped"):
+        findings.append(
+            {
+                "id": "F01",
+                "title": "Gaming surface",
+                "severity": "high" if (atk.get("flip_rate") or 0) >= 0.35 else "medium",
+                "accepted": True,
+                "run_id": atk.get("run_id", "run.attack_surface"),
+                "claim": (
+                    f"{_pct(atk.get('flip_rate'))} of declined applicants are flippable by cosmetic change "
+                    f"(n={atk.get('n_sampled')}, ¥{int((atk.get('budget_jpy') or 0)/1000)}k budget); "
+                    f"median attack cost ¥{atk.get('median_cost_jpy')}. "
+                    f"Flipped cohort defaults at {_pct(atk.get('flipped_default_rate'))} vs "
+                    f"{_pct(atk.get('baseline_default_rate'))} baseline."
+                ),
+            }
+        )
+    if not proxy.get("skipped"):
+        findings.append(
+            {
+                "id": "F02",
+                "title": "Proxy reconstruction",
+                "severity": "high" if (proxy.get("probe_auc") or 0) >= 0.95 else "medium",
+                "accepted": True,
+                "run_id": proxy.get("run_id", "run.proxy_audit"),
+                "claim": (
+                    f"Rural residence is recoverable from model-visible features at "
+                    f"{proxy.get('probe_auc')} AUC, carried chiefly by {proxy.get('chief_carrier')}. "
+                    "The model was never given it."
+                ),
+            }
+        )
+    if not excl.get("skipped") and excl.get("approval_gap_pp") is not None:
+        findings.append(
+            {
+                "id": "F03",
+                "title": "Unexplained exclusion",
+                "severity": "high" if excl["approval_gap_pp"] >= 15 else "medium",
+                "accepted": True,
+                "run_id": excl.get("run_id", "run.unexplained_exclusion"),
+                "claim": (
+                    f"Undocumented-income applicants approved {excl['approval_gap_pp']}pp less often; "
+                    f"realised default {_pct(excl.get('default_informal'))} vs {_pct(excl.get('default_formal'))}."
+                ),
+            }
+        )
+    if not segs.get("skipped"):
+        claim = ""
+        if worst:
+            claim += (
+                f"Worst understated leaf (n={worst['n']}): predicted {_pct(worst['predicted_default'])} "
+                f"vs actual {_pct(worst['actual_default'])}. "
+            )
+        if young.get("n"):
+            claim += (
+                f"Young self-employed (n={young['n']}): predicted {_pct(young.get('predicted_default'))} "
+                f"vs actual {_pct(young.get('actual_default'))}; "
+                f"approved {_pct(young.get('approval_rate'))} vs {_pct(model.get('approval_rate'))} overall."
+            )
+        if claim:
+            findings.append(
+                {
+                    "id": "F04",
+                    "title": "Broken segments",
+                    "severity": "medium",
+                    "accepted": True,
+                    "run_id": segs.get("run_id", "run.discover_segments"),
+                    "claim": claim,
+                }
+            )
+    if not gap.get("skipped"):
+        findings.append(
+            {
+                "id": "F05",
+                "title": "Integrity gap",
+                "severity": "high" if (gap.get("median_gap_ratio") or 0) >= 20 else "medium",
+                "accepted": True,
+                "run_id": gap.get("run_id", "run.integrity_gap"),
+                "claim": (
+                    f"{gap.get('median_gap_ratio')}× median. Fake it: ¥{gap.get('median_attack_cost_jpy')}. "
+                    f"Earn it: ¥{gap.get('median_genuine_cost_jpy')} / {gap.get('median_genuine_days')} days. "
+                    f"{_pct(gap.get('would_not_have_defaulted_among_gameable'))} of gameable declines would not have defaulted."
+                ),
+            }
+        )
+    if not ev.get("skipped") and ev.get("cross_rate_full_documentation") is not None:
+        findings.append(
+            {
+                "id": "F06",
+                "title": "Evidence recourse",
+                "severity": "high" if ev["cross_rate_full_documentation"] >= 0.2 else "medium",
+                "accepted": True,
+                "run_id": ev.get("run_id", "run.evidence_recourse"),
+                "claim": (
+                    f"{_pct(ev.get('cross_rate_full_documentation'))} of declined informal-income applicants "
+                    f"(n={ev.get('n_declined_informal')}) cross the cutoff on documentation alone. "
+                    f"Those who cross default at {_pct(ev.get('cross_default_rate'))} vs "
+                    f"{_pct(ev.get('portfolio_default_rate'))} portfolio. "
+                    f"Among non-defaulters, {_pct(ev.get('cross_rate_among_non_default'))} cross."
+                ),
+            }
+        )
     return findings
 
 
 def _graph(model, battery, hypotheses, follow_ups, findings) -> dict:
     nodes = [
-        {"id": "obs.model", "kind": "observation", "label": f"Scorecard AUC {model['auc_holdout']}", "run_id": "run.inspect_model"},
-        {"id": "obs.attack", "kind": "observation", "label": "Gaming surface", "run_id": battery["attack_surface"]["run_id"]},
-        {"id": "obs.proxy", "kind": "observation", "label": "Proxy probe", "run_id": battery["proxy_audit"]["run_id"]},
-        {"id": "obs.excl", "kind": "observation", "label": "Exclusion table", "run_id": battery["unexplained_exclusion"]["run_id"]},
-        {"id": "obs.seg", "kind": "observation", "label": "Segment calibration", "run_id": battery["broken_segments"]["run_id"]},
-        {"id": "obs.gap", "kind": "observation", "label": "Integrity gap", "run_id": battery["integrity_gap"]["run_id"]},
-        {"id": "obs.ev", "kind": "observation", "label": "Evidence recourse", "run_id": battery["evidence_recourse"]["run_id"]},
+        {"id": "obs.model", "kind": "observation", "label": f"Scorecard AUC {model.get('auc_holdout')}", "run_id": "run.inspect_model"},
     ]
+    for key, nid, label in (
+        ("attack_surface", "obs.attack", "Gaming surface"),
+        ("proxy_audit", "obs.proxy", "Proxy probe"),
+        ("unexplained_exclusion", "obs.excl", "Exclusion table"),
+        ("broken_segments", "obs.seg", "Segment calibration"),
+        ("integrity_gap", "obs.gap", "Integrity gap"),
+        ("evidence_recourse", "obs.ev", "Evidence recourse"),
+    ):
+        run = battery.get(key) or {}
+        if run.get("skipped"):
+            continue
+        nodes.append({"id": nid, "kind": "observation", "label": label, "run_id": run.get("run_id")})
     for h in hypotheses:
         nodes.append({"id": h["id"], "kind": "hypothesis", "label": h["statement"], "run_id": h["from_run"]})
     for fu in follow_ups:
