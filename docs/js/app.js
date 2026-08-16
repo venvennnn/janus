@@ -250,7 +250,7 @@
           <span class="num">№ ${String(i + 1).padStart(2, "0")}</span>
           <span class="title"><label><input type="checkbox" class="finding-box" data-id="${f.id}" checked> ${f.title}</label></span>
           <span class="date">${f.severity}</span>
-          <span class="subtitle">${f.claim} <span class="run">${f.run_id}</span></span>
+          <span class="subtitle">${f.claim}${f.reading ? " " + f.reading : ""} <span class="run">${f.run_id}</span></span>
         </li>`
       )
       .join("");
@@ -262,7 +262,7 @@
             <span class="num">№ ${String(i + 1).padStart(2, "0")}</span>
             <span class="title">${f.title}</span>
             <span class="date">${f.severity}</span>
-            <span class="subtitle">${f.claim}</span>
+            <span class="subtitle">${f.claim}${f.reading ? " " + f.reading : ""}</span>
           </li>`
         )
         .join("");
@@ -304,8 +304,13 @@
       const res = await fetch(apiUrl("/health"), { cache: "no-store" });
       if (!res.ok) throw new Error(res.statusText);
       const body = await res.json();
-      status.textContent = `Review service up (${body.version || "JANUS"}). Free-tier hosts sleep; the first call may wait.`;
-      status.classList.add("is-ok");
+      const llm =
+        body.llm === "anthropic"
+          ? `Claude is on (${body.model || "anthropic"}).`
+          : "Claude is off — add ANTHROPIC_API_KEY on Render.";
+      status.textContent = `Review service up (${body.version || "JANUS"}). ${llm} Free-tier hosts sleep; the first call may wait.`;
+      status.classList.toggle("is-ok", body.llm === "anthropic");
+      status.classList.toggle("is-bad", body.llm !== "anthropic");
       zip.href = apiUrl("/sample.zip");
     } catch {
       status.textContent =
@@ -375,7 +380,7 @@
       data.append("context", $("#input-context").value || "");
       const dictFile = $("#input-dictionary").files[0];
       if (dictFile) data.append("dictionary", dictFile);
-      status.textContent = "Inspecting the model. Search has not started.";
+      status.textContent = "Claude is reading the dictionary. Search has not started.";
       try {
         const res = await fetch(apiUrl("/propose"), { method: "POST", body: data });
         const body = await res.json();
@@ -383,7 +388,8 @@
         uploadJob = body;
         fillProposeTable(body.proposal);
         $("#propose-stage").hidden = false;
-        status.textContent = `${body.model.n_features} features · AUC ${body.model.auc_holdout} · ${body.model.n_holdout} rows. Confirm the table, then run.`;
+        const who = body.agent && body.agent.llm === "anthropic" ? "Claude proposed this table" : "Heuristic table (no API key)";
+        status.textContent = `${who}. ${body.model.n_features} features · AUC ${body.model.auc_holdout} · ${body.model.n_holdout} rows. Confirm, then run.`;
       } catch (err) {
         status.textContent = String(err.message || err);
       }
@@ -400,7 +406,7 @@
         status.textContent = "Propose first.";
         return;
       }
-      status.textContent = "Running the battery. This is the same engine as the recorded demo.";
+      status.textContent = "Engine is running the battery. Claude will read the figures next.";
       try {
         const res = await fetch(apiUrl("/run"), {
           method: "POST",

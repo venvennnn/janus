@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JANUS</title>
   <meta name="description" content="JANUS investigates whether a lending model rewards genuine creditworthiness — or merely the ability to manipulate what it sees.">
-  <meta name="theme-color" content="#fcfaf6">
+  <meta name="theme-color" content="#ffffff">
   <meta property="og:title" content="JANUS — credit model integrity">
   <meta property="og:description" content="Does this model reward the thing it claims to measure?">
   <meta property="og:type" content="website">
@@ -72,7 +72,7 @@
         <h1>Audit a model</h1>
         <p class="tag">five inputs<span class="sep">·</span>one human gate</p>
         <div class="body">
-          <p>Upload a credit model and a labelled holdout. Janus proposes how each feature can move. You confirm. Then the same battery that produced the recorded demo runs on <em>your</em> book.</p>
+          <p>Upload a credit model and a labelled holdout. Claude reads the feature dictionary and proposes how each feature can move. You confirm. The engine then runs the same battery that produced the recorded demo. Claude reads those figures and writes the investigation. It never invents a number.</p>
           <p>Most judges should start with the recorded book. The upload path is here so the demo is not only a walkthrough.</p>
           <p>
             <button type="button" class="text-btn" id="btn-use-book">use the JANUS book →</button>
@@ -102,7 +102,7 @@
             <label for="input-dictionary">4. Feature dictionary</label>
             <input id="input-dictionary" name="dictionary" type="file" accept=".txt,.md,.csv">
             <textarea id="input-dictionary-text" name="dictionary_text" placeholder="Or paste: savings_balance is an unverified snapshot…"></textarea>
-            <p class="hint">Strongly recommended. This is how Janus proposes mutability instead of guessing in the dark.</p>
+            <p class="hint">Strongly recommended. Claude reads this. Without it the agent is guessing in the dark.</p>
           </div>
           <div class="field">
             <label for="input-context">5. Business context</label>
@@ -118,7 +118,7 @@
         <div id="propose-stage" hidden>
           <h2 class="section-eyebrow">Human gate 1</h2>
           <div class="body">
-            <p>Edit anything that is wrong. Search does not run until you confirm. This table is the load-bearing assumption of the audit.</p>
+            <p>Claude proposed this table from the dictionary. Edit anything that is wrong. Search does not run until you confirm.</p>
           </div>
           <div class="table-wrap">
             <table class="grid" id="propose-table">
@@ -317,7 +317,7 @@
           <p>Reproduce locally:</p>
           <pre><code>pip install -e .
 python -m janus.run_audit</code></pre>
-          <p>To audit an uploaded model: <code>pip install -e ".[serve]"</code> then <code>uvicorn janus.server:app --port 8000</code>. Confirm mutability before search. The LLM, when present, still never produces a number.</p>
+          <p>To audit an uploaded model: <code>pip install -e ".[serve]"</code>, set <code>ANTHROPIC_API_KEY</code>, then <code>uvicorn janus.server:app --port 8000</code>. Claude proposes mutability and reads the battery. Confirm the table before search. The model still never produces a number.</p>
           <p>Demo data is synthetic. Generation logic and every planted mechanism are documented in <code>janus/data_gen.py</code>. No real applicant data is used.</p>
           <p>The battery says the model is gameable. The follow-up says gamed approvals are worse. The integrity gap says the honest path is two orders of magnitude more expensive. Then the recorded/true DTI split appears — and Route C is free. The people the model excludes could be approved for nothing.</p>
           <p>Janus does not make credit decisions. Attack recipes stay with the model owner. Recourse routes travel through the lender’s adverse-action process. Findings are diagnostic.</p>
