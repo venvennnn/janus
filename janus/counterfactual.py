@@ -48,7 +48,11 @@ def greedy_paths(
     features = scorecard.features
     work = X[features].to_numpy(dtype=float, copy=True)
     n = len(work)
-    levers = [lv for lv in levers_for(mode) if lv.feature not in (forbidden or set())]
+    levers = [
+        lv
+        for lv in levers_for(mode)
+        if lv.feature not in (forbidden or set()) and lv.feature in features
+    ]
     if not levers:
         p = scorecard.predict_proba(work)
         return PathResult(
@@ -77,7 +81,7 @@ def greedy_paths(
         if not active.any():
             break
         idx = np.flatnonzero(active)
-        block, meta = _candidate_block(work[idx], origin[idx], levers, mode, step_cap)
+        block, meta = _candidate_block(work[idx], origin[idx], levers, mode, step_cap, features)
         p_cand = scorecard.predict_proba(block)
         n_lev = len(levers)
         p_cand = p_cand.reshape(len(idx), n_lev, step_cap)
@@ -149,16 +153,15 @@ def _candidate_block(
     levers: list[Lever],
     mode: Mode,
     step_cap: int,
+    features: list[str],
 ) -> tuple[np.ndarray, list[tuple[int, int]]]:
     n, p = base.shape
     block = np.repeat(base, len(levers) * step_cap, axis=0)
     meta: list[tuple[int, int]] = []
     cursor = 0
-    from janus.data_gen import FEATURES
-
     for i in range(n):
         for lever in levers:
-            col = FEATURES.index(lever.feature)
+            col = features.index(lever.feature)
             for s in range(1, step_cap + 1):
                 proposed = apply_step(np.array([base[i, col]]), lever, s, mode)[0]
                 block[cursor, col] = _respect_max_delta(origin[i, col], proposed, lever, mode)

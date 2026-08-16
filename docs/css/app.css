@@ -310,6 +310,53 @@ pre {
   font-family: var(--font-sans);
   font-size: 12px;
 }
+.audit-form { margin: 36px 0 48px; max-width: 64ch; }
+.field { margin: 0 0 26px; }
+.field label {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 8px;
+}
+.field input[type="text"],
+.field input[type="number"],
+.field input[type="file"],
+.field textarea,
+.grid select,
+.grid input[type="number"],
+.grid input[type="text"] {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--hairline);
+  background: transparent;
+  color: var(--text-body);
+  font: inherit;
+  padding: 6px 0;
+  border-radius: 0;
+}
+.field input[type="file"] {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.field textarea { min-height: 4.5rem; resize: vertical; line-height: 1.5; }
+.field .hint {
+  margin: 6px 0 0;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+#api-status.is-ok { color: var(--ok); }
+#api-status.is-bad { color: var(--text-secondary); }
+#propose-stage[hidden] { display: none; }
+.grid select { font-family: var(--font-sans); font-size: 12px; }
+.grid input[type="number"] { font-family: var(--font-mono); font-size: 12px; width: 7rem; }
+.grid input[type="text"] { font-size: 13px; }
+
 .toast[hidden] { display: none; }
 
 @media (max-width: 640px) {

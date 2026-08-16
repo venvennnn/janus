@@ -45,7 +45,9 @@ The planted mechanism: cash income unrecorded → recorded DTI inflates → DTI 
 
 ## Demo
 
-The site is static and ready for GitHub Pages. One applicant, three routes, one screen.
+The recorded walkthrough is static and ready for GitHub Pages. One applicant, three routes, one screen.
+
+Judges can also **upload a model** and get a review. GitHub Pages cannot run Python, so that path is a small FastAPI service (Render, no database). The site stays the paper essay; the service only inspects, searches, and returns the same findings package `run_audit.py` writes.
 
 **[Open the demo](./docs/index.html)** after Pages is enabled, or serve it locally:
 
@@ -53,7 +55,32 @@ The site is static and ready for GitHub Pages. One applicant, three routes, one 
 python -m http.server --directory docs 8080
 ```
 
-Then visit `http://localhost:8080`.
+Then visit `http://localhost:8080`. The recorded book is `#brief`. The upload desk is `#audit`.
+
+### Audit a model (Render)
+
+Five inputs: a model with `predict_proba`, a holdout CSV with features plus `default`, an approval cutoff, a feature dictionary (strongly recommended), and optional business context. Janus proposes mutability. A person confirms. Then the mandatory battery runs. The holdout is dropped from memory after the run.
+
+One-click fallback: **use the JANUS book** — the recorded A-7100 walkthrough, no upload. A sample pack lives in `sample/` (and `docs/sample/janus-sample.zip`) so someone without a bank model can still try the upload path.
+
+```bash
+python -m pip install -e ".[serve]"
+uvicorn janus.server:app --host 0.0.0.0 --port 8000
+```
+
+`docs/js/config.js` points the static site at `http://localhost:8000` unless you are already on port 8000 or `*.onrender.com`.
+
+**Deploy the review service on Render**
+
+1. New Web Service → connect `venvennnn/janus`.
+2. Runtime: Python. Build: `pip install -e ".[serve]"`. Start: `uvicorn janus.server:app --host 0.0.0.0 --port $PORT`.
+3. Set `JANUS_SERVE_DOCS=1` so the paper site and the API share one origin (no CORS dance for judges).
+4. Optional: copy `render.yaml`. Free tier sleeps; the first request after idle can wait.
+5. If Pages still hosts the essay, set `window.JANUS_API` in `docs/js/config.js` to the Render URL.
+
+Do not upload PII. Pickle/joblib can execute code — only load a model you trust. Cap is 20,000 rows / 50 MB. Route C is a clean figure only when recorded and true income both exist; on real data it is directional, with that caveat left visible.
+
+The recorded Pages demo does not need Render. It is still the `/docs` folder on `main`.
 
 ### Deploy on GitHub
 

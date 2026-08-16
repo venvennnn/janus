@@ -15,8 +15,10 @@ documentation months rather than currency.
 
 from __future__ import annotations
 
+from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import asdict, dataclass
-from typing import Literal
+from typing import Iterator, Literal
 
 import numpy as np
 
@@ -185,9 +187,25 @@ MUTABILITY_MODEL: dict[str, Lever] = {
 }
 
 
+_LEVER_BOOK: ContextVar[dict[str, Lever] | None] = ContextVar("lever_book", default=None)
+
+
+@contextmanager
+def lever_book(model: dict[str, Lever]) -> Iterator[None]:
+    token = _LEVER_BOOK.set(model)
+    try:
+        yield
+    finally:
+        _LEVER_BOOK.reset(token)
+
+
+def active_book() -> dict[str, Lever]:
+    return _LEVER_BOOK.get() or MUTABILITY_MODEL
+
+
 def levers_for(mode: Literal["attack", "genuine"]) -> list[Lever]:
     out = []
-    for lever in MUTABILITY_MODEL.values():
+    for lever in active_book().values():
         cost = lever.attack if mode == "attack" else lever.genuine
         if cost is None:
             continue
@@ -210,7 +228,7 @@ def apply_step(values: np.ndarray, lever: Lever, steps: int, mode: Literal["atta
 
 def mutability_table() -> list[dict]:
     rows = []
-    for lever in MUTABILITY_MODEL.values():
+    for lever in active_book().values():
         rows.append(
             {
                 "feature": lever.feature,

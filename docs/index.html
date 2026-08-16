@@ -21,6 +21,7 @@
     <header>
       <nav class="nav" aria-label="Primary">
         <a href="#brief">home</a>
+        <a href="#audit">audit</a>
         <a href="#investigate">investigate</a>
         <a href="#routes">routes</a>
         <a href="#memo">memo</a>
@@ -30,9 +31,9 @@
     </header>
 
     <p class="dock" id="applicant-dock" hidden>
-      <span class="dock-id">A-7100</span>
+      <span class="dock-id" data-bind="demo_applicant.applicant_id"></span>
       <span class="sep">·</span>
-      age 21, informal income
+      <span id="dock-who"></span>
       <span class="sep">·</span>
       DTI <span data-bind="demo_applicant.recorded_dti" data-fmt="dti"></span> recorded, <span data-bind="demo_applicant.true_dti" data-fmt="dti"></span> true
       <span class="sep">·</span>
@@ -60,7 +61,89 @@
 
         <h2 class="section-eyebrow">What standard review misses</h2>
         <ol class="writing-list" id="home-findings"></ol>
-        <p><a class="more" href="#investigate">open the investigation <span class="arrow">→</span></a></p>
+        <p>
+          <a class="more" href="#investigate">open the investigation <span class="arrow">→</span></a>
+          <span class="sep">·</span>
+          <a class="more" href="#audit">audit a model <span class="arrow">→</span></a>
+        </p>
+      </section>
+
+      <section id="audit" class="view" data-view="audit" hidden>
+        <h1>Audit a model</h1>
+        <p class="tag">five inputs<span class="sep">·</span>one human gate</p>
+        <div class="body">
+          <p>Upload a credit model and a labelled holdout. Janus proposes how each feature can move. You confirm. Then the same battery that produced the recorded demo runs on <em>your</em> book.</p>
+          <p>Most judges should start with the recorded book. The upload path is here so the demo is not only a walkthrough.</p>
+          <p>
+            <button type="button" class="text-btn" id="btn-use-book">use the JANUS book →</button>
+            <span class="sep">·</span>
+            <a href="./sample/janus-sample.zip" id="sample-zip">download a sample pack</a>
+          </p>
+          <p class="fineprint" id="api-status">Checking the review service…</p>
+        </div>
+
+        <form id="audit-form" class="audit-form">
+          <div class="field">
+            <label for="input-model">1. Model</label>
+            <input id="input-model" name="model" type="file" accept=".joblib,.pkl,.pickle">
+            <p class="hint">Anything with <code>predict_proba</code>. joblib or pickle. Do not upload a model you do not trust — loading pickle executes code.</p>
+          </div>
+          <div class="field">
+            <label for="input-holdout">2. Holdout CSV</label>
+            <input id="input-holdout" name="holdout" type="file" accept=".csv">
+            <p class="hint">Features plus a <code>default</code> column. Without outcomes, Janus cannot say whether gamed approvals are riskier. Cap 20,000 rows. No PII.</p>
+          </div>
+          <div class="field">
+            <label for="input-cutoff">3. Approval cutoff</label>
+            <input id="input-cutoff" name="cutoff" type="number" step="0.001" min="0" max="1" value="0.275" required>
+            <p class="hint">Approve when predicted default is below this number. The sample pack writes its cutoff in <code>dictionary.txt</code>.</p>
+          </div>
+          <div class="field">
+            <label for="input-dictionary">4. Feature dictionary</label>
+            <input id="input-dictionary" name="dictionary" type="file" accept=".txt,.md,.csv">
+            <textarea id="input-dictionary-text" name="dictionary_text" placeholder="Or paste: savings_balance is an unverified snapshot…"></textarea>
+            <p class="hint">Strongly recommended. This is how Janus proposes mutability instead of guessing in the dark.</p>
+          </div>
+          <div class="field">
+            <label for="input-context">5. Business context</label>
+            <textarea id="input-context" name="context" placeholder="Unsecured consumer book. Informal cash income often unrecorded…"></textarea>
+            <p class="hint">Optional. Lender, product, what is verified at application.</p>
+          </div>
+          <p>
+            <button type="submit" class="text-btn" id="btn-propose">propose mutability →</button>
+          </p>
+          <p class="fineprint" id="propose-status"></p>
+        </form>
+
+        <div id="propose-stage" hidden>
+          <h2 class="section-eyebrow">Human gate 1</h2>
+          <div class="body">
+            <p>Edit anything that is wrong. Search does not run until you confirm. This table is the load-bearing assumption of the audit.</p>
+          </div>
+          <div class="table-wrap">
+            <table class="grid" id="propose-table">
+              <thead>
+                <tr>
+                  <th>Feature</th>
+                  <th>Kind</th>
+                  <th>Dir</th>
+                  <th>Fake ¥</th>
+                  <th>Earn ¥</th>
+                  <th>Why</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <label class="gate">
+            <input type="checkbox" id="gate-upload-mutability">
+            <span>I confirm these mutability assumptions for this lender</span>
+          </label>
+          <p>
+            <button type="button" class="text-btn" id="btn-run-upload">run the battery →</button>
+          </p>
+          <p class="fineprint" id="run-status"></p>
+        </div>
       </section>
 
       <section id="investigate" class="view" data-view="investigate" hidden>
@@ -156,9 +239,9 @@
           </article>
 
           <article class="panel" data-panel="5" hidden>
-            <h2>Applicant A-7100</h2>
+            <h2>Applicant <span data-bind="demo_applicant.applicant_id"></span></h2>
             <div class="body">
-              <p>Age 21. Undocumented income. Recorded DTI 1.07 against a true DTI of 0.50. Declined. Did not default. The model asked the wrong question of a person whose finances were already sound.</p>
+              <p id="demo-story">Age 21. Undocumented income. Recorded DTI 1.07 against a true DTI of 0.50. Declined. Did not default. The model asked the wrong question of a person whose finances were already sound.</p>
             </div>
             <p><a class="more" href="#routes">three routes, one screen <span class="arrow">→</span></a></p>
           </article>
@@ -167,7 +250,7 @@
 
       <section id="routes" class="view" data-view="routes" hidden>
         <h1>Three routes</h1>
-        <p class="tag">one applicant<span class="sep">·</span>A-7100</p>
+        <p class="tag">one applicant<span class="sep">·</span><span data-bind="demo_applicant.applicant_id"></span></p>
         <div class="body">
           <p>A single path is fragile. Janus returns the top routes within an effort budget. Route A is a defender finding — never shown to the applicant. Routes B and C are what a policy owner can actually offer.</p>
           <p>
@@ -206,7 +289,7 @@
             <button type="button" class="text-btn" data-apply="c">apply →</button>
           </li>
         </ol>
-        <p class="reveal" id="route-reveal" hidden>Documentation alone takes A-7100 across the cutoff. No money moved. The exclusion was measurement error — and the remedy is measurement.</p>
+        <p class="reveal" id="route-reveal" hidden>Documentation alone takes this applicant across the cutoff. No money moved. The exclusion was measurement error — and the remedy is measurement.</p>
         <p class="fineprint">Routes describe what the model responds to. They never promise approval. Route C is not a documentation mandate.</p>
       </section>
 
@@ -234,6 +317,7 @@
           <p>Reproduce locally:</p>
           <pre><code>pip install -e .
 python -m janus.run_audit</code></pre>
+          <p>To audit an uploaded model: <code>pip install -e ".[serve]"</code> then <code>uvicorn janus.server:app --port 8000</code>. Confirm mutability before search. The LLM, when present, still never produces a number.</p>
           <p>Demo data is synthetic. Generation logic and every planted mechanism are documented in <code>janus/data_gen.py</code>. No real applicant data is used.</p>
           <p>The battery says the model is gameable. The follow-up says gamed approvals are worse. The integrity gap says the honest path is two orders of magnitude more expensive. Then the recorded/true DTI split appears — and Route C is free. The people the model excludes could be approved for nothing.</p>
           <p>Janus does not make credit decisions. Attack recipes stay with the model owner. Recourse routes travel through the lender’s adverse-action process. Findings are diagnostic.</p>
@@ -244,6 +328,7 @@ python -m janus.run_audit</code></pre>
 
   <div class="toast" id="toast" hidden role="status"></div>
   <script src="./data/findings.js"></script>
+  <script src="./js/config.js"></script>
   <script src="./js/app.js"></script>
 </body>
 </html>
