@@ -1,5 +1,5 @@
 :root {
-  --bg: #fcfaf6;
+  --bg: #ffffff;
   --text-primary: #1a1712;
   --text-body: #2a251d;
   --text-secondary: #6a6355;
@@ -16,10 +16,10 @@
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; background: #ffffff; }
 body {
   margin: 0;
-  background: var(--bg);
+  background: #ffffff;
   color: var(--text-primary);
   font-family: var(--font-serif);
   font-size: 16px;

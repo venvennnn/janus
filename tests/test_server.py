@@ -32,7 +32,9 @@ def test_health():
     client = TestClient(app)
     res = client.get("/health")
     assert res.status_code == 200
-    assert res.json()["ok"] is True
+    body = res.json()
+    assert body["ok"] is True
+    assert body["llm"] in {"off", "anthropic"}
 
 
 def test_propose_rejects_holdout_without_default():

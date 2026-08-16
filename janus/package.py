@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 import pandas as pd
 
 from janus.agent import investigate
+from janus.llm import investigate_llm
 from janus.audits import (
     attack_surface,
     discover_broken_segments,
@@ -69,6 +70,9 @@ def build_findings_package(
     model_info: dict,
     seed: int | None = None,
     source: str = "synthetic",
+    dictionary: str = "",
+    context: str = "",
+    use_llm: bool = False,
 ) -> dict:
     feats = list(getattr(predictor, "features", []))
     battery = {
@@ -82,7 +86,11 @@ def build_findings_package(
     }
     demo_row = pick_demo_row(holdout, predictor)
     menu = recourse_menu(demo_row, predictor, holdout)
-    investigation = investigate(battery, model_info)
+    if use_llm:
+        investigation = investigate_llm(battery, model_info, dictionary, context)
+    else:
+        investigation = investigate(battery, model_info)
+        investigation.setdefault("agent", "heuristic")
     return {
         "product": "JANUS",
         "version": "0.3.0",

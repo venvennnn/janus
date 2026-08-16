@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 
 from janus import __version__
 from janus.ingest import IngestError, load_estimator, load_holdout, read_upload
+from janus.llm import llm_status
 from janus.run_uploaded import propose_upload, run_uploaded
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -52,7 +53,7 @@ def _purge() -> None:
 
 @app.get("/health")
 def health() -> dict:
-    return {"ok": True, "product": "JANUS", "version": __version__}
+    return {"ok": True, "product": "JANUS", "version": __version__, **llm_status()}
 
 
 @app.get("/sample.zip")
@@ -87,7 +88,7 @@ async def propose(
         blob = dictionary_text
         if dictionary is not None and dictionary.filename:
             blob = (await _bytes(dictionary)).decode("utf-8", errors="replace") + "\n" + blob
-        wrapped, info, proposal = propose_upload(estimator, frame, cutoff, blob, context)
+        wrapped, info, proposal, meta = propose_upload(estimator, frame, cutoff, blob, context)
     except IngestError as exc:
         raise HTTPException(400, str(exc)) from exc
     except Exception as exc:
@@ -99,11 +100,14 @@ async def propose(
         "model": wrapped,
         "holdout": frame,
         "info": info,
+        "dictionary": blob,
+        "context": context,
     }
     return {
         "job_id": job_id,
         "model": info,
         "proposal": proposal,
+        "agent": meta,
         "warnings": [
             "Do not upload PII. Synthetic or already-anonymised holdout only.",
             "Pickle/joblib can execute code. Only load a model you trust.",
@@ -124,7 +128,13 @@ def run(body: RunBody):
     if job is None:
         raise HTTPException(404, "Job expired or unknown. Propose again.")
     try:
-        package = run_uploaded(job["model"], job["holdout"], body.levers)
+        package = run_uploaded(
+            job["model"],
+            job["holdout"],
+            body.levers,
+            dictionary=job.get("dictionary") or "",
+            context=job.get("context") or "",
+        )
     except Exception as exc:
         raise HTTPException(400, f"Audit failed: {exc}") from exc
     _JOBS.pop(body.job_id, None)

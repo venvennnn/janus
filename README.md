@@ -22,7 +22,7 @@ The integrity gap depends on a feature mutability model — for every feature, w
 
 Without the agent, Janus works on exactly one model — the one whose lever table was hand-authored. With it, Janus works on any model a lender uploads.
 
-The LLM never produces a number. It decides what to investigate. A deterministic engine records every figure against a re-executable run ID. A hallucinated statistic is structurally impossible.
+Claude (Anthropic) does the language work: it reads the feature dictionary and business context, proposes the mutability table, then reads the finished battery and writes the investigation. The LLM never produces a number. A deterministic engine records every figure against a re-executable run ID. A hallucinated statistic is structurally impossible. Without `ANTHROPIC_API_KEY` the same loop runs on a heuristic stand-in so the demo still works.
 
 Two human gates sit on the critical path: confirm mutability assumptions, then accept or reject each finding. Janus produces evidence. A person decides.
 
@@ -59,7 +59,7 @@ Then visit `http://localhost:8080`. The recorded book is `#brief`. The upload de
 
 ### Audit a model (Render)
 
-Five inputs: a model with `predict_proba`, a holdout CSV with features plus `default`, an approval cutoff, a feature dictionary (strongly recommended), and optional business context. Janus proposes mutability. A person confirms. Then the mandatory battery runs. The holdout is dropped from memory after the run.
+Five inputs: a model with `predict_proba`, a holdout CSV with features plus `default`, an approval cutoff, a feature dictionary (strongly recommended), and optional business context. Claude proposes mutability. A person confirms. The engine runs the battery. Claude reads those figures and writes the memo. The holdout is dropped from memory after the run.
 
 One-click fallback: **use the JANUS book** — the recorded A-7100 walkthrough, no upload. A sample pack lives in `sample/` (and `docs/sample/janus-sample.zip`) so someone without a bank model can still try the upload path.
 
@@ -75,8 +75,11 @@ uvicorn janus.server:app --host 0.0.0.0 --port 8000
 1. New Web Service → connect `venvennnn/janus`.
 2. Runtime: Python. Build: `pip install -e ".[serve]"`. Start: `uvicorn janus.server:app --host 0.0.0.0 --port $PORT`.
 3. Set `JANUS_SERVE_DOCS=1` so the paper site and the API share one origin (no CORS dance for judges).
-4. Optional: copy `render.yaml`. Free tier sleeps; the first request after idle can wait.
-5. If Pages still hosts the essay, set `window.JANUS_API` in `docs/js/config.js` to the Render URL.
+4. Set `ANTHROPIC_API_KEY` to your Anthropic key. Optional: `ANTHROPIC_MODEL=claude-sonnet-4-5`.
+5. Optional: copy `render.yaml`. Free tier sleeps; the first request after idle can wait.
+6. If Pages still hosts the essay, set `window.JANUS_API` in `docs/js/config.js` to the Render URL.
+
+Do not put the key in the repo. Add it only in the Render dashboard. After you add it, Manual Deploy → Deploy latest commit.
 
 Do not upload PII. Pickle/joblib can execute code — only load a model you trust. Cap is 20,000 rows / 50 MB. Route C is a clean figure only when recorded and true income both exist; on real data it is directional, with that caveat left visible.
 
