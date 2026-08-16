@@ -1,4 +1,5 @@
 import io
+from pathlib import Path
 
 import joblib
 import pandas as pd
@@ -71,3 +72,29 @@ def test_run_requires_confirmation():
     assert body["source"] == "upload"
     assert "battery" in body
     assert body["battery"]["evidence_recourse"]["skipped"] is True
+
+
+def test_sample_pack_produces_full_review():
+    root = Path("sample")
+    if not (root / "model.joblib").exists():
+        pytest.skip("sample pack not in checkout")
+    client = TestClient(app)
+    proposed = client.post(
+        "/propose",
+        files={
+            "model": ("model.joblib", (root / "model.joblib").read_bytes(), "application/octet-stream"),
+            "holdout": ("holdout.csv", (root / "holdout.csv").read_bytes(), "text/csv"),
+            "dictionary": ("dictionary.txt", (root / "dictionary.txt").read_bytes(), "text/plain"),
+        },
+        data={"cutoff": "0.275", "context": (root / "context.txt").read_text()},
+    )
+    assert proposed.status_code == 200, proposed.text
+    job = proposed.json()
+    ran = client.post("/run", json={"job_id": job["job_id"], "confirmed": True, "levers": job["proposal"]})
+    assert ran.status_code == 200, ran.text
+    package = ran.json()
+    assert package["demo_applicant"]["applicant_id"] == "A-7100"
+    assert package["battery"]["attack_surface"]["flip_rate"] > 0.2
+    assert package["battery"]["evidence_recourse"].get("skipped") is not True
+    ids = {f["id"] for f in package["investigation"]["findings"]}
+    assert {"F01", "F05", "F06"} <= ids
