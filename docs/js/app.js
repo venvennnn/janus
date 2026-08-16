@@ -123,7 +123,7 @@
     }
     if (step >= panels.length - 1) {
       playing = false;
-      $("#btn-play").textContent = "Play";
+      $("#btn-play").textContent = "play";
       return;
     }
     setStep(step + 1);
