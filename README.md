@@ -1,15 +1,11 @@
 # JANUS
 
 **The autonomous red-team agent for credit models.**
-GOAI 2026 · Track 2 Boundless Agents · AI + Finance
 
 > JANUS investigates whether a lending model rewards genuine creditworthiness — or merely the ability to manipulate what it sees.
 
 Website/ Demo Link: https://janus-z3zs.onrender.com/ 
 
-Youtube Demo: https://youtu.be/Xu5y0DHMU48 
-
-Slides Link: https://docs.google.com/presentation/d/1wIL42StZjqqnZcG360zonNn8f4DOdrd3Tly60AhPtyY/edit?slide=id.p1#slide=id.p1  
 
 This is a **credit model integrity** product. Fairness is one branch. The unifying question is simpler: does the model reward the thing it claims to measure?
 
