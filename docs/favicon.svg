@@ -1,6 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="JANUS">
   <rect width="64" height="64" fill="#ffffff"/>
-  <path d="M20 16h24v32H20z" fill="none" stroke="#0a0a0a" stroke-width="1.8"/>
-  <path d="M20 16c7 7 7 25 0 32" fill="none" stroke="#0a0a0a" stroke-width="1.8"/>
-  <path d="M44 16c-7 7-7 25 0 32" fill="none" stroke="#0a0a0a" stroke-width="1.8"/>
+  <path d="M20 16h24v32H20z" fill="none" stroke="#111111" stroke-width="1.8"/>
+  <path d="M20 16c7 7 7 25 0 32" fill="none" stroke="#111111" stroke-width="1.8"/>
+  <path d="M44 16c-7 7-7 25 0 32" fill="none" stroke="#111111" stroke-width="1.8"/>
+  <circle cx="32" cy="32" r="2.2" fill="#8f1d13"/>
 </svg>
