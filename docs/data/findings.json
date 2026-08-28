@@ -675,7 +675,7 @@
         "hypothesis": "H4",
         "experiment": "route_c vs earn-it",
         "run_id": "run.evidence_recourse",
-        "result": "The honest *financial* route is expensive because recorded DTI is wrong. The correct honest route is documentation: \u00a50."
+        "result": "The honest *financial* route is expensive because recorded DTI is wrong. The correct honest route is documentation: $0."
       }
     ],
     "findings": [
@@ -685,7 +685,7 @@
         "severity": "high",
         "accepted": true,
         "run_id": "run.attack_surface",
-        "claim": "58.0% of declined applicants are flippable by cosmetic change (n=300, \u00a560k budget); median attack cost \u00a564.0. Flipped cohort defaults at 37.4% vs 29.7% baseline."
+        "claim": "58.0% of declined applicants are flippable by cosmetic change (n=300, $60k budget); median attack cost $64.0. Flipped cohort defaults at 37.4% vs 29.7% baseline."
       },
       {
         "id": "F02",
@@ -717,7 +717,7 @@
         "severity": "high",
         "accepted": true,
         "run_id": "run.integrity_gap",
-        "claim": "110.0\u00d7 median. Fake it: \u00a564.0. Earn it: \u00a58800.0 / 88.0 days. 62.3% of gameable declines would not have defaulted."
+        "claim": "110.0\u00d7 median. Fake it: $64.0. Earn it: $8800.0 / 88.0 days. 62.3% of gameable declines would not have defaulted."
       },
       {
         "id": "F06",

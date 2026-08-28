@@ -39,7 +39,7 @@ What standard review misses, and what this run of the engine measured:
 - Undocumented-income applicants are approved tens of points less often; realised default is effectively the same.
 - Young self-employed risk is overstated. A high-leverage leaf is understated.
 - The median integrity gap is two orders of magnitude: fake it in an afternoon, or earn it over months.
-- For informal-income declines, documentation alone — Route C, ¥0 — crosses a large share of them, and those who cross are safer than the portfolio.
+- For informal-income declines, documentation alone — Route C, $0 — crosses a large share of them, and those who cross are safer than the portfolio.
 
 The planted mechanism: cash income unrecorded → recorded DTI inflates → DTI is the heaviest feature → exclusion follows measurement error, not risk. Independent products (NaijaLedger, GemLedger) attack the same absence from the supply side. They build the documentation. Janus measures what its absence costs.
 

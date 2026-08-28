@@ -33,7 +33,7 @@
     pct: (v) => (v == null || Number.isNaN(Number(v)) ? "—" : `${Math.round(Number(v) * 100)}%`),
     pct1: (v) => (v == null || Number.isNaN(Number(v)) ? "—" : `${(Number(v) * 100).toFixed(1)}%`),
     pp: (v) => (v == null || Number.isNaN(Number(v)) ? "—" : `${Number(v).toFixed(1)}pp`),
-    yen: (v) => (v == null || Number.isNaN(Number(v)) ? "—" : `¥${Math.round(Number(v)).toLocaleString("en-US")}`),
+    usd: (v) => (v == null || Number.isNaN(Number(v)) ? "—" : `$${Math.round(Number(v)).toLocaleString("en-US")}`),
     int: (v) => (v == null || Number.isNaN(Number(v)) ? "—" : Math.round(Number(v)).toLocaleString("en-US")),
     dti: (v) => (v == null || Number.isNaN(Number(v)) ? "—" : Number(v).toFixed(2)),
     times: (v) => (v == null || Number.isNaN(Number(v)) ? "—" : `${Math.round(Number(v))}×`),
@@ -42,8 +42,15 @@
       const n = Math.round(Number(v));
       return n === 1 ? "1 day" : `${n} days`;
     },
-    raw: (v) => String(v ?? "—"),
+    raw: (v) => usdText(v),
   };
+
+  function usdText(s) {
+    return String(s ?? "")
+      .replace(/\u00a5/g, "$")
+      .replace(/¥/g, "$")
+      .replace(/\bJPY\b/g, "USD");
+  }
 
   function bind(root = document) {
     $$("[data-bind]", root).forEach((el) => {
@@ -142,14 +149,14 @@
       b: menu.route_b_earn_it || {},
       c: menu.route_c_document_it || {},
     };
-    $("#cost-a").textContent = routes.a.cost_jpy == null ? "—" : fmt.yen(routes.a.cost_jpy);
+    $("#cost-a").textContent = routes.a.cost_jpy == null ? "—" : fmt.usd(routes.a.cost_jpy);
     $("#time-a").textContent = routes.a.days == null ? "low effort" : fmt.days(routes.a.days);
     $("#p-a").textContent = routes.a.p_final == null ? "—" : `${fmt.p(routes.a.p_start ?? pStart)} → ${fmt.p(routes.a.p_final)}`;
     const feats = (routes.a.features || []).join(", ");
     $("#steps-a").textContent = feats
       ? `Model owner only: presentation-sensitive levers on ${feats}. Not applicant guidance.`
       : "Model owner only. Not applicant guidance.";
-    $("#cost-b").textContent = routes.b.cost_jpy == null ? "—" : fmt.yen(routes.b.cost_jpy);
+    $("#cost-b").textContent = routes.b.cost_jpy == null ? "—" : fmt.usd(routes.b.cost_jpy);
     $("#time-b").textContent = routes.b.days == null ? "durable change" : fmt.days(routes.b.days);
     $("#p-b").textContent = routes.b.p_final == null ? "—" : `${fmt.p(routes.b.p_start ?? pStart)} → ${fmt.p(routes.b.p_final)}`;
     const btnC = $("[data-apply=c]");
@@ -160,7 +167,7 @@
       btnC.disabled = true;
       btnC.classList.add("is-disabled");
     } else {
-      $("#cost-c").textContent = routes.c.cost_jpy == null ? "¥0" : fmt.yen(routes.c.cost_jpy);
+      $("#cost-c").textContent = routes.c.cost_jpy == null ? "$0" : fmt.usd(routes.c.cost_jpy);
       $("#time-c").textContent = routes.c.documentation_months
         ? `${routes.c.documentation_months} months of statements`
         : (routes.c.days == null ? "documentation only" : fmt.days(routes.c.days));
@@ -278,13 +285,13 @@
         run: atk.run_id || "run.attack_surface",
         how: atk.skipped
           ? atk.reason
-          : `Greedy search on n=${atk.n_sampled} declined rows, ${fmt.yen(atk.budget_jpy)} attack budget. Flipped default ${fmt.pct1(atk.flipped_default_rate)} vs baseline ${fmt.pct1(atk.baseline_default_rate)}.`,
+          : `Greedy search on n=${atk.n_sampled} declined rows, ${fmt.usd(atk.budget_jpy)} attack budget. Flipped default ${fmt.pct1(atk.flipped_default_rate)} vs baseline ${fmt.pct1(atk.baseline_default_rate)}.`,
       },
       {
         name: "Median attack effort",
         skipped: Boolean(atk.skipped),
         reason: atk.reason,
-        value: atk.median_cost_jpy == null ? "—" : fmt.yen(atk.median_cost_jpy),
+        value: atk.median_cost_jpy == null ? "—" : fmt.usd(atk.median_cost_jpy),
         meaning: "Median cost of the cheapest successful presentation path among flipped declines.",
         severity: "medium",
         kind: "Observed engine result",
@@ -302,7 +309,7 @@
         run: gap.run_id || "run.integrity_gap",
         how: gap.skipped
           ? gap.reason
-          : `Fake it ${fmt.yen(gap.median_attack_cost_jpy)}; earn it ${fmt.yen(gap.median_genuine_cost_jpy)} / ${fmt.days(gap.median_genuine_days)}. Only as credible as the signed mutability table.`,
+          : `Fake it ${fmt.usd(gap.median_attack_cost_jpy)}; earn it ${fmt.usd(gap.median_genuine_cost_jpy)} / ${fmt.days(gap.median_genuine_days)}. Only as credible as the signed mutability table.`,
       },
       {
         name: "Proxy reconstruction",
@@ -364,7 +371,7 @@
         run: ev.run_id || "run.evidence_recourse",
         how: ev.skipped
           ? ev.reason
-          : "Recorded DTI is recomputed after documenting the recorded/true income gap. Cost ¥0. Directional on real data until the gap is estimated from cash-flow.",
+          : "Recorded DTI is recomputed after documenting the recorded/true income gap. Cost $0. Directional on real data until the gap is estimated from cash-flow.",
       },
     ];
     $("#evidence-grid").innerHTML = items.map(cardHTML).join("");
@@ -387,9 +394,9 @@
       return;
     }
     value.textContent = gap.median_gap_ratio == null ? "—" : fmt.times(gap.median_gap_ratio);
-    if (attack) attack.textContent = gap.median_attack_cost_jpy == null ? "—" : fmt.yen(gap.median_attack_cost_jpy);
+    if (attack) attack.textContent = gap.median_attack_cost_jpy == null ? "—" : fmt.usd(gap.median_attack_cost_jpy);
     if (genuine) {
-      const cost = gap.median_genuine_cost_jpy == null ? "—" : fmt.yen(gap.median_genuine_cost_jpy);
+      const cost = gap.median_genuine_cost_jpy == null ? "—" : fmt.usd(gap.median_genuine_cost_jpy);
       const days = gap.median_genuine_days == null ? "" : ` · ${fmt.days(gap.median_genuine_days)}`;
       genuine.textContent = `${cost}${days}`;
     }
@@ -406,7 +413,7 @@
         (f) => `<li>
           <p class="title"><label><input type="checkbox" class="finding-box" data-id="${escape(f.id)}" checked> ${escape(f.title)}</label>
           <span class="sev sev-${escape(f.severity)}">${escape(f.severity)}</span></p>
-          <p class="subtitle">${escape(f.claim)}${f.reading ? " " + escape(f.reading) : ""} <span class="run">${escape(f.run_id)}</span></p>
+          <p class="subtitle">${escape(usdText(f.claim))}${f.reading ? " " + escape(usdText(f.reading)) : ""} <span class="run">${escape(f.run_id)}</span></p>
         </li>`
       )
       .join("");
