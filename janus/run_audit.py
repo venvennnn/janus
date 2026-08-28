@@ -40,7 +40,7 @@ def main(argv: list[str] | None = None) -> int:
     m = package["model"]
     b = package["battery"]
     print(f"AUC {m['auc_holdout']}  cutoff {m['cutoff']}  approval {m['approval_rate']}")
-    print(f"attack flip {b['attack_surface']['flip_rate']}  median ¥{b['attack_surface']['median_cost_jpy']}")
+    print(f"attack flip {b['attack_surface']['flip_rate']}  median ${b['attack_surface']['median_cost_jpy']}")
     print(f"proxy AUC {b['proxy_audit']['probe_auc']}  via {b['proxy_audit']['chief_carrier']}")
     print(f"exclusion gap {b['unexplained_exclusion']['approval_gap_pp']}pp")
     print(f"integrity gap {b['integrity_gap']['median_gap_ratio']}×")

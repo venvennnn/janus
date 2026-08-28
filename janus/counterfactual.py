@@ -85,7 +85,7 @@ def greedy_paths(
         p_cand = scorecard.predict_proba(block)
         n_lev = len(levers)
         p_cand = p_cand.reshape(len(idx), n_lev, step_cap)
-        # Improvement per yen; infeasible (zero-change / over-budget) → -inf
+        # Improvement per dollar; infeasible (zero-change / over-budget) → -inf
         p_now = p[idx][:, None, None]
         gain = p_now - p_cand
         step_cost = np.array(
