@@ -133,14 +133,6 @@
     if (def) def.textContent = d.default == null ? "—" : d.default ? "defaulted" : "did not default";
   }
 
-  function effortLine(rec, fallback) {
-    if (!rec) return fallback;
-    const parts = [];
-    if (rec.cost_jpy != null) parts.push(fmt.yen(rec.cost_jpy));
-    if (rec.days != null) parts.push(fmt.days(rec.days));
-    return parts.join(" · ") || fallback;
-  }
-
   function fillRoutes() {
     const menu = J.recourse_menu || {};
     cutoff = J.model?.cutoff;
@@ -151,14 +143,14 @@
       c: menu.route_c_document_it || {},
     };
     $("#cost-a").textContent = routes.a.cost_jpy == null ? "—" : fmt.yen(routes.a.cost_jpy);
-    $("#time-a").textContent = effortLine(routes.a, "low effort");
+    $("#time-a").textContent = routes.a.days == null ? "low effort" : fmt.days(routes.a.days);
     $("#p-a").textContent = routes.a.p_final == null ? "—" : `${fmt.p(routes.a.p_start ?? pStart)} → ${fmt.p(routes.a.p_final)}`;
     const feats = (routes.a.features || []).join(", ");
     $("#steps-a").textContent = feats
       ? `Model owner only: presentation-sensitive levers on ${feats}. Not applicant guidance.`
       : "Model owner only. Not applicant guidance.";
     $("#cost-b").textContent = routes.b.cost_jpy == null ? "—" : fmt.yen(routes.b.cost_jpy);
-    $("#time-b").textContent = effortLine(routes.b, "durable change");
+    $("#time-b").textContent = routes.b.days == null ? "durable change" : fmt.days(routes.b.days);
     $("#p-b").textContent = routes.b.p_final == null ? "—" : `${fmt.p(routes.b.p_start ?? pStart)} → ${fmt.p(routes.b.p_final)}`;
     const btnC = $("[data-apply=c]");
     if (routes.c.skipped || routes.c.p_final == null) {
@@ -171,7 +163,7 @@
       $("#cost-c").textContent = routes.c.cost_jpy == null ? "¥0" : fmt.yen(routes.c.cost_jpy);
       $("#time-c").textContent = routes.c.documentation_months
         ? `${routes.c.documentation_months} months of statements`
-        : effortLine(routes.c, "documentation only");
+        : (routes.c.days == null ? "documentation only" : fmt.days(routes.c.days));
       const dti =
         routes.c.dti_start != null && routes.c.dti_final != null
           ? ` · DTI ${fmt.dti(routes.c.dti_start)} → ${fmt.dti(routes.c.dti_final)}`

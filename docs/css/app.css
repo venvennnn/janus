@@ -32,6 +32,12 @@ body {
 }
 ::selection { background: var(--ink); color: #fff; }
 :focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
+.nav a:focus-visible,
+.brand:focus-visible,
+.text-btn:focus-visible {
+  color: var(--ink);
+  background: var(--red-soft);
+}
 
 a { color: inherit; text-decoration-color: #cfcfcf; text-underline-offset: 3px; }
 a:hover { text-decoration-color: var(--ink); }
