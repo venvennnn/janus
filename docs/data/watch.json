@@ -1,0 +1,5 @@
+{
+  "skipped": true,
+  "reason": "Integrity Watch compares two runs. The synthetic reference case is a single recorded run.",
+  "baseline_run_id": "reference"
+}

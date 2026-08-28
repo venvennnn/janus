@@ -1,0 +1,24 @@
+{
+  "policy_id": "janus-default-credit-v1",
+  "label": "Starter defaults — configurable policy assumptions, not universal regulatory thresholds.",
+  "minimums": {
+    "rows": 500,
+    "defaults": 30,
+    "segment_rows": 100,
+    "period_rows": 100
+  },
+  "model_health": {
+    "auc_fail_below": 0.60,
+    "auc_warn_below": 0.65,
+    "brier_warn_above": 0.20,
+    "ece_warn_above": 0.05,
+    "psi_warn_above": 0.10,
+    "psi_fail_above": 0.25
+  },
+  "integrity": {
+    "attack_flip_warn_above": 0.05,
+    "attack_flip_fail_above": 0.15,
+    "evidence_cross_warn_above": 0.05
+  },
+  "conclusion_rule": "Fail if data readiness or predictive performance is fail. Remediation Required if attack resistance is fail or any domain is fail. Conditional Pass if any domain is warn. Insufficient Evidence if data readiness is blocked. Otherwise Pass."
+}

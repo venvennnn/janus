@@ -1,0 +1,216 @@
+{
+  "counterfactual": {
+    "mode": "counterfactual",
+    "label": "Counterfactual twin \u2014 presentation-sensitive change only",
+    "limitation": "Matched on the same observed row. Not two economically identical businesses.",
+    "left": {
+      "title": "As recorded",
+      "applicant_id": "A-7100",
+      "p": 0.34850271227340346,
+      "decision": "declined",
+      "default": 0,
+      "held_constant": [
+        "industry/operating history are not re-simulated"
+      ],
+      "differs": {}
+    },
+    "right": {
+      "title": "After cosmetic presentation (model owner only)",
+      "applicant_id": "A-7100",
+      "p": 0.2709410222323441,
+      "decision": "would_cross_cutoff",
+      "default": 0,
+      "differs": {
+        "features": [
+          "savings_balance",
+          "credit_utilization"
+        ]
+      }
+    },
+    "why": "The same applicant crosses the cutoff after presentation-sensitive changes. Underlying repayment capacity is not asserted to have changed."
+  },
+  "matched_observation": {
+    "skipped": false,
+    "pairs": [
+      {
+        "mode": "matched-observation",
+        "matching_distance": 0.0954,
+        "limitation": "Matched on designated core features. Not economically identical.",
+        "left": {
+          "title": "Declined",
+          "applicant_id": "A-00002",
+          "p": 0.29922745206343127,
+          "decision": "declined",
+          "default": 0,
+          "held_constant": [
+            "age",
+            "employment_months",
+            "requested_amount"
+          ],
+          "differs": {
+            "savings_balance": {
+              "left": 7182.0,
+              "right": 502279.0
+            },
+            "credit_utilization": {
+              "left": 0.3485,
+              "right": 0.3037
+            },
+            "credit_inquiries_12m": {
+              "left": 1,
+              "right": 2
+            }
+          }
+        },
+        "right": {
+          "title": "Approved",
+          "applicant_id": "A-02570",
+          "p": 0.010042683521412223,
+          "decision": "approved",
+          "default": 0,
+          "held_constant": [
+            "age",
+            "employment_months",
+            "requested_amount"
+          ],
+          "differs": {
+            "savings_balance": {
+              "left": 7182.0,
+              "right": 502279.0
+            },
+            "credit_utilization": {
+              "left": 0.3485,
+              "right": 0.3037
+            },
+            "credit_inquiries_12m": {
+              "left": 1,
+              "right": 2
+            }
+          }
+        },
+        "why": "Similar on designated core features, different on presentation-sensitive fields and decision."
+      },
+      {
+        "mode": "matched-observation",
+        "matching_distance": 0.1187,
+        "limitation": "Matched on designated core features. Not economically identical.",
+        "left": {
+          "title": "Declined",
+          "applicant_id": "A-00026",
+          "p": 0.3072460603031086,
+          "decision": "declined",
+          "default": 0,
+          "held_constant": [
+            "age",
+            "employment_months",
+            "requested_amount"
+          ],
+          "differs": {
+            "savings_balance": {
+              "left": 3350.0,
+              "right": 80563.0
+            },
+            "credit_utilization": {
+              "left": 0.5155,
+              "right": 0.5282
+            },
+            "credit_inquiries_12m": {
+              "left": 3,
+              "right": 1
+            }
+          }
+        },
+        "right": {
+          "title": "Approved",
+          "applicant_id": "A-04065",
+          "p": 0.15062442420585972,
+          "decision": "approved",
+          "default": 0,
+          "held_constant": [
+            "age",
+            "employment_months",
+            "requested_amount"
+          ],
+          "differs": {
+            "savings_balance": {
+              "left": 3350.0,
+              "right": 80563.0
+            },
+            "credit_utilization": {
+              "left": 0.5155,
+              "right": 0.5282
+            },
+            "credit_inquiries_12m": {
+              "left": 3,
+              "right": 1
+            }
+          }
+        },
+        "why": "Similar on designated core features, different on presentation-sensitive fields and decision."
+      },
+      {
+        "mode": "matched-observation",
+        "matching_distance": 0.1374,
+        "limitation": "Matched on designated core features. Not economically identical.",
+        "left": {
+          "title": "Declined",
+          "applicant_id": "A-00033",
+          "p": 0.35632017143124955,
+          "decision": "declined",
+          "default": 0,
+          "held_constant": [
+            "age",
+            "employment_months",
+            "requested_amount"
+          ],
+          "differs": {
+            "savings_balance": {
+              "left": 4818.0,
+              "right": 2270.0
+            },
+            "credit_utilization": {
+              "left": 0.6842,
+              "right": 0.2309
+            },
+            "credit_inquiries_12m": {
+              "left": 3,
+              "right": 1
+            }
+          }
+        },
+        "right": {
+          "title": "Approved",
+          "applicant_id": "A-14084",
+          "p": 0.1786320828643428,
+          "decision": "approved",
+          "default": 1,
+          "held_constant": [
+            "age",
+            "employment_months",
+            "requested_amount"
+          ],
+          "differs": {
+            "savings_balance": {
+              "left": 4818.0,
+              "right": 2270.0
+            },
+            "credit_utilization": {
+              "left": 0.6842,
+              "right": 0.2309
+            },
+            "credit_inquiries_12m": {
+              "left": 3,
+              "right": 1
+            }
+          }
+        },
+        "why": "Similar on designated core features, different on presentation-sensitive fields and decision."
+      }
+    ],
+    "method_version": "janus.integrity.twins.v1"
+  },
+  "capital_injection_example": {
+    "label": "Conceptual example \u2014 not engine output",
+    "note": "A capital injection is not inherently illegitimate. The integrity risk is treating a temporary balance as durable repayment capacity."
+  }
+}

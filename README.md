@@ -57,7 +57,20 @@ Judges can also **upload a model** and get a review. GitHub Pages cannot run Pyt
 python -m http.server --directory docs 8080
 ```
 
-Then visit `http://localhost:8080`. The page is a single scroll: Overview, Break the Model, Reference Case, Method, Governance, then Audit your model.
+Then visit `http://localhost:8080`. Reference mode is static and works on GitHub Pages with no backend.
+
+### GitHub Pages demo
+
+The `docs/` folder is the demo. No build step.
+
+1. **Settings → Pages**
+2. **Source:** Deploy from a branch
+3. **Branch:** `main` · **Folder:** `/docs`
+4. Save. The site is `https://<user>.github.io/janus/`
+
+That serves Overview, Model Health, Attack Lab, and the rest of the recorded case. Live upload still needs the FastAPI service (Render, or `JANUS_SERVE_DOCS=1`).
+
+Keyboard: `1` `2` `3` apply routes on the desk; `R` resets.
 
 ### Audit a model (Render)
 
@@ -86,6 +99,8 @@ Do not put the key in the repo. Add it only in the Render dashboard. After you a
 Do not upload PII. Pickle/joblib can execute code — only load a model you trust. Cap is 20,000 rows / 50 MB. Route C is a clean figure only when recorded and true income both exist; on real data it is directional, with that caveat left visible.
 
 The recorded Pages demo does not need Render. It is still the `/docs` folder on `main`.
+
+Live audit uses `/api/v1/runs`: map the target (for example `dpd90_index_x`), optional date (`LOAN_CREATED_AT_LCL_TS`), and exposure only after you confirm it is not revenue. Model Health runs before integrity tests. Mutability still requires a human confirmation.
 
 ### Deploy on GitHub
 
