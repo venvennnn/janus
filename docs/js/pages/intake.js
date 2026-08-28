@@ -1,5 +1,5 @@
-import { $, escapeHtml } from "../format.js?v=031";
-import { state } from "../state.js?v=031";
+import { $, escapeHtml } from "../format.js?v=032";
+import { state } from "../state.js?v=032";
 
 function columns() {
   return ((state.datasetProfile || {}).columns || []).map((c) => c.name);

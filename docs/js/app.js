@@ -1,17 +1,17 @@
-import { $, $$, fmt, bind as bindData, escapeHtml } from "./format.js?v=031";
-import { apiUrl, pingApi, fetchJSON, postForm, postJSON, putJSON } from "./api.js?v=031";
-import { state, setState } from "./state.js?v=031";
-import { initRouter } from "./router.js?v=031";
-import { renderOverview } from "./pages/overview.js?v=031";
-import { renderHealth } from "./pages/model-health.js?v=031";
-import { renderEvidenceCards } from "./pages/attack-lab.js?v=031";
-import { renderTwins } from "./pages/decision-twins.js?v=031";
-import { renderEvidenceGap } from "./pages/evidence-gap.js?v=031";
-import { renderRemediation } from "./pages/remediation.js?v=031";
-import { renderWatch } from "./pages/integrity-watch.js?v=031";
-import { renderRoom, exportJSON, exportHTML } from "./pages/evidence-room.js?v=031";
-import { fillMapping, collectMapping, mappingReady } from "./pages/intake.js?v=031";
-import { fillProposeTable, collectLevers } from "./pages/assumptions.js?v=031";
+import { $, $$, fmt, bind as bindData, escapeHtml } from "./format.js?v=032";
+import { apiUrl, pingApi, fetchJSON, postForm, postJSON, putJSON } from "./api.js?v=032";
+import { state, setState } from "./state.js?v=032";
+import { initRouter } from "./router.js?v=032";
+import { renderOverview } from "./pages/overview.js?v=032";
+import { renderHealth } from "./pages/model-health.js?v=032";
+import { renderEvidenceCards } from "./pages/attack-lab.js?v=032";
+import { renderTwins } from "./pages/decision-twins.js?v=032";
+import { renderEvidenceGap } from "./pages/evidence-gap.js?v=032";
+import { renderRemediation } from "./pages/remediation.js?v=032";
+import { renderWatch } from "./pages/integrity-watch.js?v=032";
+import { renderRoom, exportJSON, exportHTML } from "./pages/evidence-room.js?v=032";
+import { fillMapping, collectMapping, mappingReady } from "./pages/intake.js?v=032";
+import { fillProposeTable, collectLevers } from "./pages/assumptions.js?v=032";
 
 initRouter();
 

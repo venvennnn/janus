@@ -1,6 +1,6 @@
-import { escapeHtml, fmt } from "../format.js?v=031";
-import { state, setState } from "../state.js?v=031";
-import { renderRoom } from "./evidence-room.js?v=031";
+import { escapeHtml, fmt } from "../format.js?v=032";
+import { state, setState } from "../state.js?v=032";
+import { renderRoom } from "./evidence-room.js?v=032";
 
 export function renderEvidenceGap() {
   const live = state.evidenceGap;

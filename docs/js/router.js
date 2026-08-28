@@ -1,4 +1,4 @@
-import { $, $$ } from "./format.js?v=031";
+import { $, $$ } from "./format.js?v=032";
 
 export const ROUTES = [
   ["#overview", "Overview"],
