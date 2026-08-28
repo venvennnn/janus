@@ -1,0 +1,135 @@
+{
+  "scenarios": [
+    {
+      "name": "Baseline",
+      "actions": [],
+      "notes": [],
+      "cutoff": 0.275,
+      "core_metrics": {
+        "roc_auc": 0.6681,
+        "gini": 0.3362,
+        "ks": 0.2517,
+        "pr_auc": 0.4497,
+        "brier": 0.1938,
+        "acceptance_rate": 0.4798,
+        "approved_default_rate": 0.1947,
+        "approved_loss_rate": null
+      },
+      "delta_from_baseline": {
+        "roc_auc": 0.0,
+        "gini": 0.0,
+        "ks": 0.0,
+        "pr_auc": 0.0,
+        "brier": 0.0,
+        "acceptance_rate": 0.0,
+        "approved_default_rate": 0.0
+      },
+      "conclusion": "Conditional Pass",
+      "label": "Input/policy sensitivity \u2014 the estimator was not retrained."
+    },
+    {
+      "name": "Cap savings_balance at 90th percentile",
+      "actions": [
+        {
+          "type": "cap",
+          "feature": "savings_balance",
+          "value": 53541.79999999996
+        }
+      ],
+      "notes": [
+        "Capped savings_balance at 53541.79999999996. Sensitivity test on inputs, not a retrained model."
+      ],
+      "cutoff": 0.275,
+      "core_metrics": {
+        "roc_auc": 0.6676,
+        "gini": 0.3353,
+        "ks": 0.2549,
+        "pr_auc": 0.4496,
+        "brier": 0.194,
+        "acceptance_rate": 0.4669,
+        "approved_default_rate": 0.1917,
+        "approved_loss_rate": null
+      },
+      "delta_from_baseline": {
+        "roc_auc": -0.0005,
+        "gini": -0.0009,
+        "ks": 0.0032,
+        "pr_auc": -0.0001,
+        "brier": 0.0002,
+        "acceptance_rate": -0.0129,
+        "approved_default_rate": -0.003
+      },
+      "conclusion": "Conditional Pass",
+      "label": "Input/policy sensitivity \u2014 the estimator was not retrained."
+    },
+    {
+      "name": "Tighter cutoff 0.22",
+      "actions": [
+        {
+          "type": "cutoff",
+          "value": 0.22
+        }
+      ],
+      "notes": [
+        "Cutoff set to 0.22. This is a policy change, not a retrained model."
+      ],
+      "cutoff": 0.22,
+      "core_metrics": {
+        "roc_auc": 0.6681,
+        "gini": 0.3362,
+        "ks": 0.2517,
+        "pr_auc": 0.4497,
+        "brier": 0.1938,
+        "acceptance_rate": 0.2577,
+        "approved_default_rate": 0.1497,
+        "approved_loss_rate": null
+      },
+      "delta_from_baseline": {
+        "roc_auc": 0.0,
+        "gini": 0.0,
+        "ks": 0.0,
+        "pr_auc": 0.0,
+        "brier": 0.0,
+        "acceptance_rate": -0.2221,
+        "approved_default_rate": -0.045
+      },
+      "conclusion": "Conditional Pass",
+      "label": "Input/policy sensitivity \u2014 the estimator was not retrained."
+    },
+    {
+      "name": "Replace recorded DTI with true DTI",
+      "actions": [
+        {
+          "type": "replace",
+          "feature": "debt_to_income",
+          "source": "dti_true"
+        }
+      ],
+      "notes": [
+        "Replaced debt_to_income with corroborated dti_true. Not a retrained model."
+      ],
+      "cutoff": 0.275,
+      "core_metrics": {
+        "roc_auc": 0.6744,
+        "gini": 0.3488,
+        "ks": 0.2513,
+        "pr_auc": 0.4672,
+        "brier": 0.1932,
+        "acceptance_rate": 0.5688,
+        "approved_default_rate": 0.2073,
+        "approved_loss_rate": null
+      },
+      "delta_from_baseline": {
+        "roc_auc": 0.0063,
+        "gini": 0.0126,
+        "ks": -0.0004,
+        "pr_auc": 0.0175,
+        "brier": -0.0006,
+        "acceptance_rate": 0.089,
+        "approved_default_rate": 0.0126
+      },
+      "conclusion": "Pass",
+      "label": "Input/policy sensitivity \u2014 the estimator was not retrained."
+    }
+  ]
+}

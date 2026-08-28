@@ -57,7 +57,20 @@ Judges can also **upload a model** and get a review. GitHub Pages cannot run Pyt
 python -m http.server --directory docs 8080
 ```
 
-Then visit `http://localhost:8080`. The page is a single scroll: Overview, Break the Model, Reference Case, Method, Governance, then Audit your model.
+Then visit `http://localhost:8080`. Reference mode is static and works on GitHub Pages with no backend.
+
+### GitHub Pages demo
+
+The `docs/` folder is the demo. No build step.
+
+1. **Settings → Pages**
+2. **Source:** Deploy from a branch
+3. **Branch:** `main` · **Folder:** `/docs`
+4. Save. The site is `https://<user>.github.io/janus/`
+
+That serves Overview, Model Health, Attack Lab, and the rest of the recorded case. Live upload still needs the FastAPI service (Render, or `JANUS_SERVE_DOCS=1`).
+
+Keyboard: `1` `2` `3` apply routes on the desk; `R` resets.
 
 ### Audit a model (Render)
 

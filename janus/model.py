@@ -23,6 +23,9 @@ AUDIT_COLUMNS = {
 }
 
 
+from janus.validation.scoring import class_index
+
+
 @dataclass
 class WrappedModel:
     estimator: object
@@ -34,9 +37,10 @@ class WrappedModel:
     def predict_proba(self, X: pd.DataFrame | np.ndarray) -> np.ndarray:
         frame = X[self.features] if isinstance(X, pd.DataFrame) else pd.DataFrame(np.asarray(X), columns=self.features)
         raw = self.estimator.predict_proba(frame)
-        if getattr(raw, "ndim", 1) == 2 and raw.shape[1] >= 2:
-            return np.asarray(raw)[:, 1]
-        return np.asarray(raw).reshape(-1)
+        arr = np.asarray(raw)
+        if getattr(arr, "ndim", 1) == 2 and arr.shape[1] >= 2:
+            return arr[:, class_index(self.estimator, 1)]
+        return arr.reshape(-1)
 
     def decide(self, X: pd.DataFrame | np.ndarray) -> np.ndarray:
         return (self.predict_proba(X) < self.cutoff).astype(int)
