@@ -1,6 +1,6 @@
-import { escapeHtml, fmt } from "../format.js";
-import { state, setState } from "../state.js";
-import { frontierChart } from "../charts.js";
+import { escapeHtml, fmt } from "../format.js?v=031";
+import { state, setState } from "../state.js?v=031";
+import { frontierChart } from "../charts.js?v=031";
 
 export function renderRemediation() {
   const scenarios = (state.remediation || {}).scenarios || [];

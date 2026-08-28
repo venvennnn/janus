@@ -7,7 +7,7 @@ def test_single_main_landmark():
     html = (ROOT / "index.html").read_text()
     assert html.count("<main") == 1
     assert 'id="main"' in html
-    assert 'type="module" src="./js/app.js"' in html
+    assert 'type="module" src="./js/app.js' in html
     assert "0.668" not in html
     assert "58.0%" not in html
     assert "fonts.googleapis.com" not in html

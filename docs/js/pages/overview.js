@@ -1,5 +1,5 @@
-import { escapeHtml, fmt, statusLabel, usdText } from "../format.js";
-import { state } from "../state.js";
+import { escapeHtml, fmt, statusLabel, usdText } from "../format.js?v=031";
+import { state } from "../state.js?v=031";
 
 export function renderOverview() {
   const h = state.health || {};

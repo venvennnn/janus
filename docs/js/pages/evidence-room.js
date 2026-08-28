@@ -1,5 +1,5 @@
-import { escapeHtml, usdText } from "../format.js";
-import { state, setState } from "../state.js";
+import { escapeHtml, usdText } from "../format.js?v=031";
+import { state, setState } from "../state.js?v=031";
 
 export function renderRoom() {
   const items = ((state.findings || {}).investigation || {}).findings || [];

@@ -1,6 +1,6 @@
-import { escapeHtml, fmt, statusLabel } from "../format.js";
-import { rocChart, prChart, calibrationChart, bandChart } from "../charts.js";
-import { state } from "../state.js";
+import { escapeHtml, fmt, statusLabel } from "../format.js?v=031";
+import { rocChart, prChart, calibrationChart, bandChart } from "../charts.js?v=031";
+import { state } from "../state.js?v=031";
 
 export function renderHealth() {
   const h = state.health;

@@ -1,4 +1,4 @@
-import { $$, escapeHtml } from "../format.js";
+import { $$, escapeHtml } from "../format.js?v=031";
 
 export function fillProposeTable(rows) {
   const body = document.querySelector("#propose-table tbody");

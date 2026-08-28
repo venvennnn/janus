@@ -1,6 +1,6 @@
-import { escapeHtml, fmt } from "../format.js";
-import { state } from "../state.js";
-import { fetchJSON, postJSON, apiUrl } from "../api.js";
+import { escapeHtml, fmt } from "../format.js?v=031";
+import { state } from "../state.js?v=031";
+import { fetchJSON, postJSON, apiUrl } from "../api.js?v=031";
 
 export function renderWatch() {
   const w = state.watch || {};
