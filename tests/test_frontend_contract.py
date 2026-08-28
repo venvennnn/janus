@@ -37,7 +37,11 @@ def test_reference_json_present():
     assert "observation date" in health["rolling"]["reason"]
 
 
-def test_js_modules_exist():
+def test_api_js_no_duplicate_exports():
+    text = (ROOT / "js" / "api.js").read_text()
+    assert text.count("export function apiDetail") == 1
+    assert text.count("export async function pingApi") == 1
+    assert text.count("export async function fetchJSON") == 1
     for name in (
         "format.js",
         "api.js",
