@@ -26,6 +26,8 @@ export function renderTwins() {
 function pair(p) {
   const left = p.left || {};
   const right = p.right || {};
+  const held = (left.held_constant || []).map(escapeHtml).join(", ");
+  const differs = formatDiff(left.differs || right.differs || {});
   return `<div class="twins">
     <article>
       <p class="eyebrow">${escapeHtml(p.mode || "")}</p>
@@ -41,5 +43,18 @@ function pair(p) {
       <p>Outcome: ${right.default == null ? "—" : right.default ? "defaulted" : "did not default"}</p>
     </article>
   </div>
+  <p class="fineprint">Held constant: ${held || "—"}. Differs: ${differs}. Matching distance ${p.matching_distance == null ? "—" : fmt.auc(p.matching_distance)}.</p>
   <p class="fineprint">${escapeHtml(p.limitation || "")} ${escapeHtml(p.why || "")}</p>`;
+}
+
+function formatDiff(diff) {
+  if (!diff || typeof diff !== "object") return "—";
+  if (Array.isArray(diff.features)) return diff.features.map(escapeHtml).join(", ") || "—";
+  return Object.keys(diff)
+    .map((k) => {
+      const v = diff[k];
+      if (v && typeof v === "object" && "left" in v) return `${escapeHtml(k)} (${v.left} → ${v.right})`;
+      return escapeHtml(k);
+    })
+    .join("; ") || "—";
 }

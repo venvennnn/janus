@@ -100,6 +100,8 @@ Do not upload PII. Pickle/joblib can execute code — only load a model you trus
 
 The recorded Pages demo does not need Render. It is still the `/docs` folder on `main`.
 
+Live audit uses `/api/v1/runs`: map the target (for example `dpd90_index_x`), optional date (`LOAN_CREATED_AT_LCL_TS`), and exposure only after you confirm it is not revenue. Model Health runs before integrity tests. Mutability still requires a human confirmation.
+
 ### Deploy on GitHub
 
 The site is the `docs/` folder. No build. Do this once:

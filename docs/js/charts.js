@@ -53,3 +53,35 @@ export function bandChart(bands) {
   return `<svg class="chart" viewBox="0 0 ${w} ${h}" role="img"><line x1="${pad}" y1="${h - pad}" x2="${w - pad}" y2="${h - pad}" stroke="#d0d0d0"/>${bars}</svg>
     <p class="fineprint">Black = predicted default. Red = observed default.</p>`;
 }
+
+export function frontierChart(scenarios) {
+  if (!scenarios || scenarios.length < 2) return `<p class="skipped">Need at least two scenarios.</p>`;
+  const pts = scenarios
+    .map((s) => {
+      const c = s.core_metrics || {};
+      if (c.roc_auc == null || c.approved_default_rate == null) return null;
+      return { x: c.approved_default_rate, y: c.roc_auc, name: s.name };
+    })
+    .filter(Boolean);
+  if (pts.length < 2) return `<p class="skipped">Need numeric AUC and approved default rate.</p>`;
+  const w = 360;
+  const h = 200;
+  const pad = 32;
+  const xs = pts.map((p) => p.x);
+  const ys = pts.map((p) => p.y);
+  const x0 = Math.min(...xs);
+  const x1 = Math.max(...xs);
+  const y0 = Math.min(...ys);
+  const y1 = Math.max(...ys);
+  const sx = (x) => pad + ((x - x0) / (x1 - x0 || 1)) * (w - 2 * pad);
+  const sy = (y) => h - pad - ((y - y0) / (y1 - y0 || 1)) * (h - 2 * pad);
+  const dots = pts
+    .map((p) => `<circle cx="${sx(p.x).toFixed(1)}" cy="${sy(p.y).toFixed(1)}" r="4" fill="#111"/>`)
+    .join("");
+  return `<svg class="chart frontier" viewBox="0 0 ${w} ${h}" role="img" aria-label="AUC versus approved default rate">
+    <line x1="${pad}" y1="${h - pad}" x2="${w - pad}" y2="${h - pad}" stroke="#d0d0d0"/>
+    <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${h - pad}" stroke="#d0d0d0"/>
+    ${dots}
+  </svg>
+  <p class="fineprint">Horizontal: approved default rate. Vertical: AUC. ${pts.map((p) => p.name).join(" · ")}</p>`;
+}

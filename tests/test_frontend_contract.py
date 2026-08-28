@@ -10,6 +10,9 @@ def test_single_main_landmark():
     assert 'type="module" src="./js/app.js"' in html
     assert "0.668" not in html
     assert "58.0%" not in html
+    assert "fonts.googleapis.com" not in html
+    assert 'id="map-stage"' in html
+    assert 'id="map-target"' in html
     for name in (
         "Overview",
         "Model Health",
@@ -45,5 +48,14 @@ def test_js_modules_exist():
         "pages/overview.js",
         "pages/model-health.js",
         "pages/attack-lab.js",
+        "pages/intake.js",
+        "pages/assumptions.js",
+        "pages/evidence-gap.js",
+        "pages/remediation.js",
+        "pages/integrity-watch.js",
+        "pages/evidence-room.js",
+        "pages/decision-twins.js",
+        "pages/overview.js",
+        "pages/model-health.js",
     ):
         assert (ROOT / "js" / name).exists(), name

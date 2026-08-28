@@ -14,6 +14,10 @@ export const state = {
   error: {},
   confirmedAssumptions: false,
   selectedScenario: 0,
+  workflowStep: "review",
+  datasetProfile: null,
+  schemaSuggestions: null,
+  evidenceGap: null,
 };
 
 export function setState(patch) {

@@ -7,9 +7,6 @@
   <meta name="description" content="AUC tells you whether the model predicts. JANUS tells you whether the model can be trusted.">
   <meta name="theme-color" content="#ffffff">
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./css/app.css">
 </head>
 <body>
@@ -238,9 +235,88 @@
           <label for="input-context">5. Business context</label>
           <textarea id="input-context" name="context"></textarea>
         </div>
-        <p><button type="submit" class="btn" id="btn-propose">Propose mutability</button></p>
+        <p><button type="submit" class="btn" id="btn-propose">Upload and profile</button></p>
         <p class="status" id="propose-status" role="status"></p>
       </form>
+      <div id="map-stage" hidden>
+        <h3>Schema mapping</h3>
+        <p class="intro">Confirm each column’s role. JANUS will not treat revenue as exposure from the name alone.</p>
+        <p class="fineprint" id="map-profile"></p>
+        <div class="table-wrap">
+          <table class="grid" id="map-table">
+            <thead>
+              <tr>
+                <th>Purpose</th>
+                <th>Selected column</th>
+                <th>Required</th>
+                <th>Validation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Default target</td>
+                <td><select id="map-target" aria-label="Default target column"></select></td>
+                <td>Yes</td>
+                <td>Binary 0/1. Suggested <code>dpd90_index_x</code> or <code>default</code>.</td>
+              </tr>
+              <tr>
+                <td>Observation date</td>
+                <td><select id="map-timestamp" aria-label="Observation date column"></select></td>
+                <td>No</td>
+                <td>Parseable date. Suggested <code>LOAN_CREATED_AT_LCL_TS</code>.</td>
+              </tr>
+              <tr>
+                <td>Exposure</td>
+                <td><select id="map-exposure" aria-label="Exposure column"></select></td>
+                <td>No</td>
+                <td>Non-negative numeric. Confirm the semantic role.</td>
+              </tr>
+              <tr>
+                <td>Record ID</td>
+                <td><select id="map-id" aria-label="Record ID column"></select></td>
+                <td>No</td>
+                <td>Prefer unique. Masked in the UI.</td>
+              </tr>
+              <tr>
+                <td>Segments</td>
+                <td><select id="map-segments" aria-label="Segment columns" multiple size="4"></select></td>
+                <td>No</td>
+                <td>At least two useful groups. Not inferred as protected attributes.</td>
+              </tr>
+              <tr>
+                <td>Revenue (not loss)</td>
+                <td><select id="map-revenue" aria-label="Revenue column" disabled></select></td>
+                <td>No</td>
+                <td>Informational. Not used as approved-loss exposure.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note" id="map-revenue-warn" hidden></p>
+        <div class="field">
+          <label>Evidence pair (optional)</label>
+          <p class="hint">Recorded column ↔ verified column. Leave blank to skip Evidence Gap. JANUS never fabricates verified values.</p>
+          <p class="map-pair">
+            <select id="map-recorded" aria-label="Recorded evidence column"></select>
+            <span>↔</span>
+            <select id="map-verified" aria-label="Verified evidence column"></select>
+          </p>
+        </div>
+        <label class="gate">
+          <input type="checkbox" id="map-positive">
+          <span>1 represents the adverse event (for example DPD90 default).</span>
+        </label>
+        <label class="gate">
+          <input type="checkbox" id="map-matured">
+          <span>This holdout is matured — the target outcome is known.</span>
+        </label>
+        <label class="gate">
+          <input type="checkbox" id="map-window">
+          <span>The performance window is sufficient for this validation.</span>
+        </label>
+        <p><button type="button" class="btn" id="btn-map">Save mapping and run Model Health</button></p>
+        <p class="status" id="map-status" role="status"></p>
+      </div>
       <div id="propose-stage" hidden>
         <h3>Review assumptions</h3>
         <p>Edit anything that is wrong. Costs are USD. Search does not run until you confirm.</p>

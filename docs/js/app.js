@@ -1,5 +1,5 @@
 import { $, $$, fmt, bind as bindData, escapeHtml } from "./format.js";
-import { apiUrl, apiDetail, pingApi, fetchJSON } from "./api.js";
+import { apiUrl, pingApi, fetchJSON, postForm, postJSON, putJSON } from "./api.js";
 import { state, setState } from "./state.js";
 import { initRouter } from "./router.js";
 import { renderOverview } from "./pages/overview.js";
@@ -10,6 +10,8 @@ import { renderEvidenceGap } from "./pages/evidence-gap.js";
 import { renderRemediation } from "./pages/remediation.js";
 import { renderWatch } from "./pages/integrity-watch.js";
 import { renderRoom, exportJSON, exportHTML } from "./pages/evidence-room.js";
+import { fillMapping, collectMapping, mappingReady } from "./pages/intake.js";
+import { fillProposeTable, collectLevers } from "./pages/assumptions.js";
 
 initRouter();
 
@@ -35,6 +37,8 @@ function paintHeader() {
   $("#hdr-mode").textContent = state.mode === "reference" ? "Reference" : "Live audit";
   $("#hdr-model").textContent = state.modelVersion;
   $("#hdr-status").textContent = state.runStatus;
+  const banner = document.querySelector(".source-banner");
+  if (banner) banner.hidden = state.mode !== "reference";
 }
 
 function renderAll() {
@@ -162,48 +166,6 @@ function applyRoute(key) {
   }
 }
 
-function fillProposeTable(rows) {
-  $("#propose-table tbody").innerHTML = rows
-    .map((row) => {
-      const payload = encodeURIComponent(JSON.stringify(row));
-      const kinds = ["cosmetic", "genuine", "mixed", "immutable", "documentation"]
-        .map((k) => `<option${k === row.kind ? " selected" : ""}>${k}</option>`)
-        .join("");
-      const dirs = ["up", "down"].map((d) => `<option${d === row.direction ? " selected" : ""}>${d}</option>`).join("");
-      return `<tr data-row="${payload}">
-        <td><code>${escapeHtml(row.feature)}</code></td>
-        <td><select name="kind">${kinds}</select></td>
-        <td><select name="direction">${dirs}</select></td>
-        <td><input name="attack" type="number" step="1" value="${row.attack_cost_jpy ?? ""}"></td>
-        <td><input name="attack_days" type="number" step="0.1" value="${row.attack_days ?? ""}"></td>
-        <td><input name="genuine" type="number" step="1" value="${row.genuine_cost_jpy ?? ""}"></td>
-        <td><input name="genuine_days" type="number" step="0.1" value="${row.genuine_days ?? ""}"></td>
-        <td><input name="rationale" type="text" value="${escapeHtml(row.rationale || "")}"></td>
-      </tr>`;
-    })
-    .join("");
-}
-
-function collectLevers() {
-  return $$("#propose-table tbody tr").map((tr) => {
-    const row = JSON.parse(decodeURIComponent(tr.dataset.row));
-    const num = (name) => {
-      const v = tr.querySelector(`[name=${name}]`).value;
-      return v === "" ? null : Number(v);
-    };
-    return {
-      ...row,
-      kind: tr.querySelector("[name=kind]").value,
-      direction: tr.querySelector("[name=direction]").value,
-      attack_cost_jpy: num("attack"),
-      attack_days: num("attack_days"),
-      genuine_cost_jpy: num("genuine"),
-      genuine_days: num("genuine_days"),
-      rationale: tr.querySelector("[name=rationale]").value,
-    };
-  });
-}
-
 function startProgress(el, labels) {
   stopProgress(el);
   let i = 0;
@@ -245,7 +207,8 @@ function wire() {
     const btn = $("#btn-run-upload");
     if (btn) btn.disabled = !$("#gate-upload-mutability").checked;
   });
-  $("#audit-form")?.addEventListener("submit", onPropose);
+  $("#audit-form")?.addEventListener("submit", onIntake);
+  $("#btn-map")?.addEventListener("click", onMap);
   $("#btn-run-upload")?.addEventListener("click", onRun);
   pingApi()
     .then((body) => {
@@ -259,7 +222,7 @@ function wire() {
     });
 }
 
-async function onPropose(e) {
+async function onIntake(e) {
   e.preventDefault();
   const status = $("#propose-status");
   const model = $("#input-model").files[0];
@@ -269,25 +232,67 @@ async function onPropose(e) {
     return;
   }
   const data = new FormData();
-  data.append("model", model);
-  data.append("holdout", holdout);
+  data.append("model_file", model);
+  data.append("holdout_file", holdout);
   data.append("cutoff", $("#input-cutoff").value);
   data.append("dictionary_text", $("#input-dictionary-text").value || "");
   data.append("context", $("#input-context").value || "");
   const dictFile = $("#input-dictionary").files[0];
   if (dictFile) data.append("dictionary", dictFile);
-  startProgress(status, ["Inspecting model", "Reading feature definitions"]);
+  startProgress(status, ["Reading files", "Profiling columns"]);
   try {
-    const res = await fetch(apiUrl("/propose"), { method: "POST", body: data });
-    const body = await res.json().catch(() => ({}));
+    const body = await postForm("/api/v1/runs", data);
     stopProgress(status);
-    if (!res.ok) throw new Error(apiDetail(body, res.statusText));
     uploadJob = body;
-    fillProposeTable(Array.isArray(body.proposal) ? body.proposal : []);
+    setState({
+      mode: "live",
+      runId: body.run_id,
+      runName: "Live audit",
+      runStatus: "Draft",
+      modelVersion: body.model?.name || "uploaded",
+      datasetProfile: body.dataset_profile,
+      schemaSuggestions: body.schema_suggestions,
+      workflowStep: "intake",
+    });
+    fillMapping();
+    $("#propose-stage").hidden = true;
+    status.textContent = `Profiled. ${body.dataset_profile?.row_count} rows. Confirm mappings before Model Health.`;
+  } catch (err) {
+    stopProgress(status);
+    status.textContent = String(err.message || err);
+  }
+}
+
+async function onMap() {
+  const status = $("#map-status");
+  if (!uploadJob?.run_id) {
+    status.textContent = "Upload a model and holdout first.";
+    return;
+  }
+  if (!mappingReady()) {
+    status.textContent = "Confirm the target, that 1 is the adverse event, and that the holdout is matured.";
+    return;
+  }
+  startProgress(status, ["Mapping schema", "Running Model Health", "Proposing assumptions"]);
+  try {
+    const mapping = collectMapping();
+    await putJSON(`/api/v1/runs/${uploadJob.run_id}/configuration`, mapping);
+    const health = await postJSON(`/api/v1/runs/${uploadJob.run_id}/model-health`);
+    const proposed = await postJSON(`/api/v1/runs/${uploadJob.run_id}/assumptions/propose`);
+    stopProgress(status);
+    fillProposeTable(Array.isArray(proposed.proposal) ? proposed.proposal : []);
     $("#propose-stage").hidden = false;
     $("#gate-upload-mutability").checked = false;
     $("#btn-run-upload").disabled = true;
-    status.textContent = `Awaiting human confirmation. ${body.model?.n_features} features · AUC ${fmt.auc(body.model?.auc_holdout)}.`;
+    setState({
+      health,
+      runStatus: health.conclusion || "Model Health complete",
+      workflowStep: "assumptions",
+      confirmedAssumptions: false,
+    });
+    renderAll();
+    status.textContent = `Model Health ${health.conclusion}. Confirm mutability before integrity tests.`;
+    location.hash = "#health";
   } catch (err) {
     stopProgress(status);
     status.textContent = String(err.message || err);
@@ -300,30 +305,44 @@ async function onRun() {
     status.textContent = "Confirm the mutability table before search runs.";
     return;
   }
-  if (!uploadJob) {
-    status.textContent = "Propose first.";
+  if (!uploadJob?.run_id) {
+    status.textContent = "Upload and map first.";
     return;
   }
-  startProgress(status, ["Searching decision boundary", "Testing segments", "Building evidence package"]);
+  startProgress(status, ["Confirming assumptions", "Attack Lab", "Decision Twins", "Evidence Gap"]);
   try {
-    const res = await fetch(apiUrl("/run"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ job_id: uploadJob.job_id, confirmed: true, levers: collectLevers() }),
+    await putJSON(`/api/v1/runs/${uploadJob.run_id}/assumptions`, {
+      confirmed: true,
+      levers: collectLevers(),
+      reviewer: "local-user",
     });
-    const body = await res.json().catch(() => ({}));
+    const attack = await postJSON(`/api/v1/runs/${uploadJob.run_id}/attack-lab`);
+    const twins = await postJSON(`/api/v1/runs/${uploadJob.run_id}/decision-twins`);
+    const evidence = await postJSON(`/api/v1/runs/${uploadJob.run_id}/evidence-gap`);
+    const results = await fetch(apiUrl(`/api/v1/runs/${uploadJob.run_id}/results`)).then((r) => r.json());
     stopProgress(status);
-    if (!res.ok) throw new Error(apiDetail(body, res.statusText));
+    const pkg = results.findings_package || {};
+    if (attack.recourse_menu) pkg.recourse_menu = attack.recourse_menu;
+    if (attack.demo_applicant) pkg.demo_applicant = attack.demo_applicant;
+    if (attack.attack_surface) {
+      pkg.battery = pkg.battery || {};
+      pkg.battery.attack_surface = attack.attack_surface;
+      pkg.battery.integrity_gap = attack.integrity_gap;
+    }
     setState({
       mode: "live",
-      runId: body.run_id || uploadJob.job_id,
+      runId: uploadJob.run_id,
       runName: "Live audit",
       runStatus: "Integrity tests complete",
-      modelVersion: "uploaded",
-      findings: body,
+      findings: pkg,
+      twins,
+      evidenceGap: evidence,
+      remediation: { scenarios: results.scenarios || [] },
+      workflowStep: "review",
+      confirmedAssumptions: true,
     });
     renderAll();
-    status.textContent = "Live results are bound on this page. Raw holdout was dropped from memory.";
+    status.textContent = "Integrity tests bound. Remediation scenarios are input/policy sensitivity tests, not retraining.";
     location.hash = "#overview";
   } catch (err) {
     stopProgress(status);
@@ -352,8 +371,16 @@ async function loadReference() {
     remediation,
     watch,
     policy,
+    workflowStep: "review",
+    evidenceGap: findings?.battery?.evidence_recourse
+      ? { status: findings.battery.evidence_recourse.skipped ? "skipped" : "tested", result: findings.battery.evidence_recourse }
+      : null,
   });
   renderAll();
+  const map = document.getElementById("map-stage");
+  if (map) map.hidden = true;
+  const propose = document.getElementById("propose-stage");
+  if (propose) propose.hidden = true;
 }
 
 loadReference().catch((err) => {

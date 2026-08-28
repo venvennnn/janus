@@ -92,11 +92,20 @@ class AssumptionConfirmBody(BaseModel):
 
 
 class FindingUpdateBody(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    severity: str | None = None
+    domain: str | None = None
     status: str | None = None
     owner: str | None = None
     due_date: str | None = None
     recommended_action: str | None = None
     reviewer: str | None = None
+    limitation: str | None = None
+
+
+class EvidenceGapBody(BaseModel):
+    evidence_mappings: list[dict[str, str]] = Field(default_factory=list)
 
 
 class ApprovalBody(BaseModel):

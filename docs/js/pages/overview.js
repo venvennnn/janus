@@ -1,4 +1,4 @@
-import { escapeHtml, fmt, statusLabel } from "../format.js";
+import { escapeHtml, fmt, statusLabel, usdText } from "../format.js";
 import { state } from "../state.js";
 
 export function renderOverview() {
@@ -11,25 +11,37 @@ export function renderOverview() {
   document.getElementById("ov-health-status").textContent = h.conclusion || "—";
   document.getElementById("ov-integrity-status").textContent = atk.skipped
     ? atk.reason || "Skipped"
-    : `Attack flip ${fmt.pct1(atk.flip_rate)}`;
+    : atk.flip_rate == null
+      ? "Integrity tests not started"
+      : `Attack flip ${fmt.pct1(atk.flip_rate)}`;
   document.getElementById("ov-findings").innerHTML = top
     .map(
-      (f) => `<li><strong>${escapeHtml(f.title)}</strong> · ${escapeHtml(f.severity)} · ${escapeHtml(usd(f.claim))}</li>`
+      (f) => `<li><strong>${escapeHtml(f.title)}</strong> · ${escapeHtml(f.severity)} · ${escapeHtml(usdText(f.claim || f.description || ""))}</li>`
     )
     .join("") || "<li>No findings in this run.</li>";
   document.getElementById("ov-auc").textContent = fmt.auc(core.roc_auc);
-  const steps = ["Intake", "Model Health", "Assumptions", "Integrity Tests", "Remediation", "Review"];
-  document.getElementById("ov-workflow").innerHTML = steps.map((s) => `<li>${s}</li>`).join("");
+  const steps = [
+    ["intake", "Intake"],
+    ["health", "Model Health"],
+    ["assumptions", "Assumptions"],
+    ["integrity", "Integrity Tests"],
+    ["remediation", "Remediation"],
+    ["review", "Review"],
+  ];
+  const now = state.workflowStep || "review";
+  document.getElementById("ov-workflow").innerHTML = steps
+    .map(([key, label]) => `<li class="${key === now ? "is-now" : ""}">${label}</li>`)
+    .join("");
   const grid = document.getElementById("ov-domains");
   if (grid) {
     grid.innerHTML = Object.entries(domains)
-      .map(([k, v]) => `<div class="mini"><dt>${escapeHtml(k.replace(/_/g, " "))}</dt><dd>${escapeHtml(statusLabel(v))}</dd></div>`)
+      .map(([k, v]) => `<div><dt>${escapeHtml(k.replace(/_/g, " "))}</dt><dd>${escapeHtml(statusLabel(v))}</dd></div>`)
       .join("");
   }
-}
-
-function usd(s) {
-  return String(s || "")
-    .replace(/\u00a5/g, "$")
-    .replace(/¥/g, "$");
+  const cta = document.querySelector(".hero-actions .text-btn");
+  if (cta) {
+    if (now === "intake") cta.setAttribute("href", "#audit");
+    else if (now === "health" || now === "assumptions") cta.setAttribute("href", "#audit");
+    else cta.setAttribute("href", "#attack");
+  }
 }

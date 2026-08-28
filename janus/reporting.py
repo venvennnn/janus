@@ -8,7 +8,7 @@ from typing import Any
 
 
 def export_package(run: dict[str, Any]) -> dict[str, Any]:
-    skip = {"estimator", "holdout", "model_bytes", "holdout_bytes"}
+    skip = {"estimator", "holdout", "holdout_raw", "wrapped", "model_bytes", "holdout_bytes"}
     return {k: v for k, v in run.items() if k not in skip}
 
 

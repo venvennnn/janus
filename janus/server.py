@@ -10,7 +10,7 @@ import zipfile
 from io import BytesIO
 from pathlib import Path
 
-from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi import Body, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, Response
 
@@ -24,13 +24,15 @@ from janus.ingest import (
     profile_frame,
     read_upload,
 )
+from janus.integrity.evidence_gap import run_evidence_gap
+from janus.integrity.metrics import attack_flip_metric, integrity_gap_metric, mask_record_ids
 from janus.integrity.twins import counterfactual_twin, matched_observation_twins
 from janus.llm import llm_status
 from janus.model import inspect_wrapped, wrap_estimator
 from janus.package import build_findings_package
 from janus.policy import load_policy
 from janus.reporting import html_report, json_bytes
-from janus.remediation.scenarios import evaluate_scenario
+from janus.remediation.scenarios import default_v1_actions, evaluate_scenario
 from janus.run_uploaded import propose_upload
 from janus.levers import lever_book, mutability_table
 from janus.propose import rows_to_levers
@@ -39,6 +41,7 @@ from janus.schemas import (
     AssumptionConfirmBody,
     ComparisonBody,
     ConfigurationBody,
+    EvidenceGapBody,
     FindingUpdateBody,
     RemediationScenarioBody,
     RunBody,
@@ -354,22 +357,39 @@ def confirm_assumptions(run_id: str, body: AssumptionConfirmBody):
 @app.post("/api/v1/runs/{run_id}/attack-lab")
 def attack_lab(run_id: str):
     job = _ready_for_integrity(run_id)
-    package = _integrity_package(job)
-    STORE.update(run_id, findings_package=package, status="integrity_tests_complete")
-    STORE.drop_raw(run_id)
-    atk = package["battery"]["attack_surface"]
+    package = job.get("findings_package") or _integrity_package(job)
+    atk = dict(package["battery"]["attack_surface"])
+    gap = package["battery"]["integrity_gap"]
     menu = package["recourse_menu"]
+    atk["flipped_applicant_ids"] = mask_record_ids(atk.get("flipped_applicant_ids") or [])
+    findings = job.get("findings") or _findings_from_package(package)
+    STORE.update(
+        run_id,
+        findings_package=package,
+        findings=findings,
+        status="integrity_tests_complete",
+    )
+    _seed_remediations(run_id)
     return {
         "status": "complete" if not atk.get("skipped") else "skipped",
         "reason": atk.get("reason"),
         "attack_surface": atk,
-        "integrity_gap": package["battery"]["integrity_gap"],
+        "integrity_gap": gap,
+        "metrics": {
+            "attack_flip_rate": attack_flip_metric(atk),
+            "integrity_gap": integrity_gap_metric(gap),
+            "route_flip_rates": {
+                "cosmetic": gap.get("attack_flip_rate"),
+                "genuine": gap.get("genuine_flip_rate"),
+            },
+        },
         "recourse_menu": menu,
         "demo_applicant": package["demo_applicant"],
         "limitations": [
             "A decision change is not an improvement in model performance.",
             "Successful attacks are not proof of fraud or of changed creditworthiness.",
             "Detailed feature steps are model-owner only.",
+            "Holdout remains in memory until TTL so Remediation Studio can run, then raw bytes are dropped.",
         ],
     }
 
@@ -391,24 +411,63 @@ def decision_twins(run_id: str):
         cosmetic = [r["feature"] for r in (job.get("levers") or mutability_table()) if r.get("kind") in {"cosmetic", "mixed"}]
         core = [c for c in ("age", "employment_months", "requested_amount") if c in frame.columns]
         matched = matched_observation_twins(frame, p, float(cfg.get("cutoff", 0.275)), core, cosmetic)
-    return {"counterfactual": cf, "matched_observation": matched}
+    twins = {
+        "counterfactual": cf,
+        "matched_observation": matched,
+        "capital_injection_example": {
+            "label": "Conceptual example — not engine output",
+            "note": "A capital injection is not inherently illegitimate. The integrity risk is treating a temporary balance as durable repayment capacity.",
+        },
+    }
+    STORE.update(run_id, twins=twins)
+    return twins
 
 
 @app.post("/api/v1/runs/{run_id}/evidence-gap")
-def evidence_gap(run_id: str):
+def evidence_gap(run_id: str, body: EvidenceGapBody | None = Body(default=None)):
     job = _job(run_id)
     cfg = job.get("configuration") or {}
-    mappings = cfg.get("evidence_mappings") or []
+    mappings = list(cfg.get("evidence_mappings") or [])
+    if body and body.evidence_mappings:
+        mappings = body.evidence_mappings
+        cfg = {**cfg, "evidence_mappings": mappings}
+        STORE.update(run_id, configuration=cfg)
     package = job.get("findings_package")
     if package is None and job.get("levers"):
         package = _integrity_package(job)
         STORE.update(run_id, findings_package=package)
-    ev = (package or {}).get("battery", {}).get("evidence_recourse") if package else None
-    if ev and not ev.get("skipped"):
-        return {"status": "tested", "result": ev, "source": "recorded_vs_true_income_on_this_book"}
+    book = (package or {}).get("battery", {}).get("evidence_recourse") if package else None
+    frame = job.get("holdout")
+    estimator = job.get("wrapped").estimator if job.get("wrapped") else job.get("estimator")
+    features = (job.get("info") or {}).get("features") or []
+    if frame is not None and estimator is not None and features:
+        computed = run_evidence_gap(
+            estimator,
+            frame,
+            features=features,
+            cutoff=float(cfg.get("cutoff", 0.275)),
+            mappings=mappings,
+            positive_class=int(cfg.get("positive_class", 1)),
+            exposure_column=cfg.get("exposure_column"),
+        )
+        if computed["status"] != "skipped":
+            STORE.update(run_id, evidence_gap=computed)
+            return computed
+        if book and not book.get("skipped"):
+            out = {"status": "tested", "reason": None, "result": book, "source": "recorded_vs_true_income_on_this_book"}
+            STORE.update(run_id, evidence_gap=out)
+            return out
+        STORE.update(run_id, evidence_gap=computed)
+        return computed
+    if book and not book.get("skipped"):
+        return {"status": "tested", "reason": None, "result": book, "source": "recorded_vs_true_income_on_this_book"}
     if not mappings:
-        return {"status": "skipped", "reason": "Skipped — no evidence pair", "result": ev}
-    return {"status": "partially_tested" if ev else "blocked", "reason": ev.get("reason") if ev else "Blocked — insufficient matched records", "result": ev}
+        return {"status": "skipped", "reason": "Skipped — no evidence pair", "result": book}
+    return {
+        "status": "blocked",
+        "reason": "Blocked — insufficient matched records",
+        "result": book,
+    }
 
 
 @app.post("/api/v1/runs/{run_id}/remediation-scenarios")
@@ -482,12 +541,15 @@ def add_finding(run_id: str, body: FindingUpdateBody):
     findings = list(job.get("findings") or _findings_from_package(job.get("findings_package")))
     rec = {
         "id": f"F{len(findings)+1:02d}",
-        "title": body.recommended_action or "Draft finding",
+        "domain": body.domain or "integrity",
+        "title": body.title or body.recommended_action or "Draft finding",
+        "description": body.description or "",
         "status": body.status or "draft",
         "owner": body.owner,
         "due_date": body.due_date,
-        "severity": "medium",
-        "description": "",
+        "severity": body.severity or "medium",
+        "recommended_action": body.recommended_action,
+        "limitation": body.limitation or "Engine evidence. Not proof of fraud or causality.",
     }
     findings.append(rec)
     STORE.update(run_id, findings=findings)
@@ -500,7 +562,7 @@ def update_finding(run_id: str, finding_id: str, body: FindingUpdateBody):
     findings = list(job.get("findings") or _findings_from_package(job.get("findings_package")))
     for f in findings:
         if f.get("id") == finding_id:
-            for key in ("status", "owner", "due_date", "recommended_action"):
+            for key in ("status", "owner", "due_date", "recommended_action", "title", "description", "severity", "limitation"):
                 val = getattr(body, key)
                 if val is not None:
                     f[key] = val
@@ -557,6 +619,8 @@ def get_results(run_id: str):
     return {
         "model_health": job.get("model_health"),
         "findings_package": job.get("findings_package"),
+        "evidence_gap": job.get("evidence_gap"),
+        "twins": job.get("twins"),
         "scenarios": job.get("scenarios") or [],
         "findings": job.get("findings") or _findings_from_package(job.get("findings_package")),
         "approvals": job.get("approvals") or [],
@@ -585,6 +649,14 @@ def compare(body: ComparisonBody):
     }
 
 
+@app.post("/api/v1/runs/{run_id}/finalize")
+def finalize_run(run_id: str):
+    job = _job(run_id)
+    STORE.drop_raw(run_id)
+    STORE.update(run_id, status=job.get("status") or "integrity_tests_complete", raw_dropped=True)
+    return {"run_id": run_id, "raw_dropped": True}
+
+
 @app.get("/api/v1/runs/{run_id}/export.json")
 def export_json(run_id: str):
     job = _job(run_id)
@@ -611,6 +683,45 @@ def _ready_for_integrity(run_id: str) -> dict:
     if job.get("holdout") is None and job.get("findings_package") is None:
         raise HTTPException(400, "Holdout is no longer in memory.")
     return job
+
+
+def _seed_remediations(run_id: str) -> None:
+    job = STORE.get(run_id) or {}
+    if job.get("scenarios"):
+        return
+    frame = job.get("holdout")
+    if frame is None or job.get("wrapped") is None and job.get("estimator") is None:
+        return
+    cfg = job.get("configuration") or {}
+    baseline = job.get("model_health")
+    estimator = job.get("wrapped").estimator if job.get("wrapped") else job["estimator"]
+    features = (job.get("info") or {}).get("features") or []
+    if not features:
+        return
+    try:
+        scenarios = []
+        for name, actions in default_v1_actions(frame, job.get("levers") or [], float(cfg.get("cutoff", 0.275))):
+            result = evaluate_scenario(
+                estimator,
+                frame,
+                features=features,
+                cutoff=float(cfg.get("cutoff", 0.275)),
+                actions=actions,
+                target_column="default",
+                positive_class=int(cfg.get("positive_class", 1)),
+                timestamp_column=cfg.get("timestamp_column"),
+                exposure_column=cfg.get("exposure_column"),
+                segment_columns=cfg.get("segment_columns") or [],
+                baseline=baseline,
+                name=name,
+                model_name=job.get("name") or "upload",
+            )
+            result.update({"id": f"scn_{uuid.uuid4().hex[:8]}", "created_by": "janus", "created_at": now(), "reviewer_status": "needs_review"})
+            scenarios.append(result)
+        if scenarios:
+            STORE.update(run_id, scenarios=scenarios)
+    except Exception:
+        return
 
 
 def _integrity_package(job: dict) -> dict:
