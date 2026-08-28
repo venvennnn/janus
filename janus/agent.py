@@ -138,7 +138,7 @@ def _follow_ups(hypotheses: list[dict], battery: dict) -> list[dict]:
             if ev.get("skipped")
             else (
                 "The honest *financial* route is expensive because recorded DTI is wrong. "
-                "The correct honest route is documentation: ¥0."
+                "The correct honest route is documentation: $0."
             )
         )
         out.append(
@@ -173,8 +173,8 @@ def _materiality(battery: dict, model: dict) -> list[dict]:
                 "run_id": atk.get("run_id", "run.attack_surface"),
                 "claim": (
                     f"{_pct(atk.get('flip_rate'))} of declined applicants are flippable by cosmetic change "
-                    f"(n={atk.get('n_sampled')}, ¥{int((atk.get('budget_jpy') or 0)/1000)}k budget); "
-                    f"median attack cost ¥{atk.get('median_cost_jpy')}. "
+                    f"(n={atk.get('n_sampled')}, ${int((atk.get('budget_jpy') or 0)/1000)}k budget); "
+                    f"median attack cost ${atk.get('median_cost_jpy')}. "
                     f"Flipped cohort defaults at {_pct(atk.get('flipped_default_rate'))} vs "
                     f"{_pct(atk.get('baseline_default_rate'))} baseline."
                 ),
@@ -242,8 +242,8 @@ def _materiality(battery: dict, model: dict) -> list[dict]:
                 "accepted": True,
                 "run_id": gap.get("run_id", "run.integrity_gap"),
                 "claim": (
-                    f"{gap.get('median_gap_ratio')}× median. Fake it: ¥{gap.get('median_attack_cost_jpy')}. "
-                    f"Earn it: ¥{gap.get('median_genuine_cost_jpy')} / {gap.get('median_genuine_days')} days. "
+                    f"{gap.get('median_gap_ratio')}× median. Fake it: ${gap.get('median_attack_cost_jpy')}. "
+                    f"Earn it: ${gap.get('median_genuine_cost_jpy')} / {gap.get('median_genuine_days')} days. "
                     f"{_pct(gap.get('would_not_have_defaulted_among_gameable'))} of gameable declines would not have defaulted."
                 ),
             }

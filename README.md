@@ -39,7 +39,7 @@ What standard review misses, and what this run of the engine measured:
 - Undocumented-income applicants are approved tens of points less often; realised default is effectively the same.
 - Young self-employed risk is overstated. A high-leverage leaf is understated.
 - The median integrity gap is two orders of magnitude: fake it in an afternoon, or earn it over months.
-- For informal-income declines, documentation alone — Route C, ¥0 — crosses a large share of them, and those who cross are safer than the portfolio.
+- For informal-income declines, documentation alone — Route C, $0 — crosses a large share of them, and those who cross are safer than the portfolio.
 
 The planted mechanism: cash income unrecorded → recorded DTI inflates → DTI is the heaviest feature → exclusion follows measurement error, not risk. Independent products (NaijaLedger, GemLedger) attack the same absence from the supply side. They build the documentation. Janus measures what its absence costs.
 
@@ -57,7 +57,7 @@ Judges can also **upload a model** and get a review. GitHub Pages cannot run Pyt
 python -m http.server --directory docs 8080
 ```
 
-Then visit `http://localhost:8080`. The recorded book is `#brief`. The upload desk is `#audit`.
+Then visit `http://localhost:8080`. The page is a single scroll: Overview, Break the Model, Reference Case, Method, Governance, then Audit your model.
 
 ### Audit a model (Render)
 
@@ -108,7 +108,7 @@ The Actions workflow uses Node 24-native action versions (`checkout@v6`, `config
 
 All asset paths are relative. No build step. No API keys. Every displayed figure is bound to `docs/data/findings.json`, which is emitted by the engine.
 
-Keyboard: `j` / `k` or arrows step the investigation; `1` `2` `3` apply routes on the desk.
+Keyboard: `1` `2` `3` apply routes on the desk; `R` resets.
 
 ## Reproduce the figures
 

@@ -141,7 +141,7 @@ def propose_mutability_llm(
         "- immutable: outside the window (age, bureau history, geography).\n"
         "- documentation: Route C — make existing income visible, not a cosmetic lever.\n\n"
         "Attack cost is what it costs to *present* the value. Genuine cost is what "
-        "it costs to *become* the value. Currency is JPY. "
+        "it costs to *become* the value. Currency is USD. "
         "If a path should not be offered, set that cost to null.\n"
         "Do not invent portfolio statistics, AUC, default rates, or flip rates.\n"
         "Only propose levers for the listed model features.\n\n"
@@ -170,7 +170,7 @@ def investigate_llm(
     prompt = (
         "You are JANUS. The deterministic engine has finished the mandatory battery. "
         "Every number below is already computed. You may quote those numbers. "
-        "You must not invent a new statistic, percentage, yen amount, or AUC.\n"
+        "You must not invent a new statistic, percentage, dollar amount, or AUC.\n"
         "Form hypotheses from surprises. Read each engine finding and write why it "
         "matters for model-risk review. Keep finding ids (F01…).\n\n"
         f"OBJECTIVE: {engine['objective']}\n\n"
