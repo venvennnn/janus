@@ -57,7 +57,7 @@ Judges can also **upload a model** and get a review. GitHub Pages cannot run Pyt
 python -m http.server --directory docs 8080
 ```
 
-Then visit `http://localhost:8080`. The recorded book is `#brief`. The upload desk is `#audit`.
+Then visit `http://localhost:8080`. The page is a single scroll: Overview, Break the Model, Reference Case, Method, Governance, then Audit your model.
 
 ### Audit a model (Render)
 
@@ -108,7 +108,7 @@ The Actions workflow uses Node 24-native action versions (`checkout@v6`, `config
 
 All asset paths are relative. No build step. No API keys. Every displayed figure is bound to `docs/data/findings.json`, which is emitted by the engine.
 
-Keyboard: `j` / `k` or arrows step the investigation; `1` `2` `3` apply routes on the desk.
+Keyboard: `1` `2` `3` apply routes on the desk; `R` resets.
 
 ## Reproduce the figures
 
